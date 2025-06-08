@@ -3,6 +3,7 @@ import json
 import os
 import time
 import pprint
+from pathlib import Path
 
 BASE_URL = "https://api.openalex.org"
 
@@ -203,10 +204,36 @@ def enrich_fields_with_description(fields_path, description_path, output_path=No
 
     print(f"✅ Descriptions added to topics and saved to {output_path}")
 
+def extract_subfields(json_data: list, output_path: str = "subfields.json"):
+    """
+    Extracts all subf_name and subf_id pairs from a JSON list of fields
+    and saves them to a file as a list of dictionaries.
+    """
+    subfields = []
+
+    for field in json_data:
+        for subf in field.get("subfields", []):
+            subfields.append({
+                "subf_name": subf["subf_name"],
+                "subf_id": subf["subf_id"]
+            })
+
+    # Save to file
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(subfields, f, indent=2, ensure_ascii=False)
+
+    print(f"✅ Extracted {len(subfields)} subfields and saved to {output_path}")
+
 # Example usage
 if __name__ == "__main__":
-    enrich_fields_with_description(
-        fields_path="./data/fields_subfields_topics_enriched.json",
-        description_path="./data/openalex_topics.json",
-        output_path="./data/fields_subfields_topics_enriched_v1.json"  # or None to overwrite
-    )
+    # enrich_fields_with_description(
+    #     fields_path="./data/fields_subfields_topics_enriched.json",
+    #     description_path="./data/openalex_topics.json",
+    #     output_path="./data/fields_subfields_topics_enriched_v1.json"  # or None to overwrite
+    # )
+
+    fields  = "src/data/openalex_fields_metadata.json"  
+    with open(fields, "r", encoding="utf-8") as f:
+        fields_data = json.load(f)
+
+    extract_subfields(fields_data, "subfields.json")

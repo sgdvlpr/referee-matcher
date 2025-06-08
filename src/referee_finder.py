@@ -8,6 +8,10 @@ import re
 from typing import List, Dict, Optional
 from pathlib import Path
 
+LIARA_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiI2ODQ0NGNjYmMyODAzYzlkYmI0ZTQ3MTIiLCJ0eXBlIjoiYXV0aCIsImlhdCI6MTc0OTMwNzAwMH0.4xuTmA2p0onfvGHo8XlwV4vIjlcE7REMVre0luU-2yU'
+
+from openai import OpenAI
+
 genai.configure(api_key="AIzaSyAj6k2V-Dj39KDMU92nA7q2vYYbsuQ9q2g")
 model = genai.GenerativeModel("gemini-1.5-flash")  # Or "gemini-pro"
 
@@ -18,6 +22,11 @@ class RefereeMatcher:
         self.AUTHOR_IDS = author_ids
         self.base_url = "https://api.openalex.org"
         self.fields_metadata = Path(__file__).parent / "data" / "openalex_fields_metadata.json" 
+        self.subfields = Path(__file__).parent / "data" / "subfields.json" 
+        self.llm_client = OpenAI(
+            base_url="https://ai.liara.ir/api/v1/68444daf64f28c83a27063e1",
+            api_key=LIARA_API_KEY
+        )
 
     async def set_conflict_ids(self):
         """
@@ -130,6 +139,49 @@ class RefereeMatcher:
 
         return top_works
   
+    async def get_best_matching_fields(self, abstract: str) -> Dict:
+        """
+        Use LLM to find the most relevant field from OpenAlex metadata based on the abstract.
+        """
+        with open(self.subfields, "r", encoding="utf-8") as f:      
+            subfields = json.load(f)
+
+        prompt = f"""
+            You are a research field classification expert. Your task is to analyze scientific abstracts and determine the **most appropriate academic subfield** for each one. You will be given:
+            - A list of candidate subfields (with their names and OpenAlex IDs),
+            - A research abstract.
+
+            Your goal is to select the **three most relevant subfields** based on the abstract’s core contribution, scientific context, and application area. Avoid choosing subfields just because of repeated keywords. Instead, focus on the **purpose of the research**, the **domain it contributes to**, and **who would most likely read or cite the paper**.
+
+            Respond only with a JSON array of three objects, each in this format:
+            {{
+                "selected_subfield_name": "Subfield Name",
+                "selected_subfield_id": "https://openalex.org/subfields/xxxx",
+                "reason": "A short explanation for why this subfield is the best match."
+            }}
+
+            Abstract:
+            \"\"\"
+            {abstract}
+            \"\"\"
+
+            Candidate subfields:
+            {subfields}
+            """
+
+        response = self.llm_client.chat.completions.create(
+            model="openai/gpt-4o-mini",
+            messages=[
+                {
+                    "role": "user", 
+                    "content": prompt
+                }
+            ]
+        )
+
+        answer = response.choices[0].message.content.strip()
+        return answer
+
     # Just for illustration - build on top of that when you are back on 1404/03/17
     async def extract_topics_from_abstract(self, abstract: str, subfield_topics: List[Dict]) -> List[Dict]:
         """
@@ -462,26 +514,23 @@ async def main():
 
     field_id = "https://openalex.org/fields/27"
     subf_id = "https://openalex.org/subfields/2703"
-    topics = await matcher.get_topics_for_subfield(field_id, subf_id)
-    pprint(topics, compact=False, width=100)
-
-    # referee_id = 'https://openalex.org/A5053004808'
     
-    # paper_title = "A 32-mW 40-Gb/s CMOS NRZ Receiver"
-
-    # topic_id ="https://openalex.org/T14117"
-
-    # top_works = await matcher.fetch_top_works_for_topic(topic_id, 10, 2010, 50)
-    # pprint(top_works, compact=False, width=100)
-
-    # works = await matcher.get_top_works_by_topic(paper_title, 10)
-
-    # pprint(works, compact=False, width=100)
-
-    # # Get detailed referee information
-    # details = await matcher.get_all_referees_details(candidate_author_ids)
-
-    # pprint(details, compact=False, width=100)
+    abstract = 'Injection locking characteristics of oscillators are derived and a graphical analysis is presented that describes injection pulling in time and frequency domains. An identity obtained from phase and envelope equations is used to express the requisite oscillator nonlinearity and interpret phase noise reduction. The behavior of phase-locked oscillators under injection pulling is also formulated.'
+    abstract1 = 'This study introduces a deep convolutional neural network model trained on retinal fundus images to automatically detect signs of diabetic retinopathy. Using a dataset of 35,000 annotated images, our model achieves an AUC of 0.96, outperforming existing computer-aided diagnostic tools. The approach demonstrates potential for large-scale automated screening.'
+    abstract2 = 'A class-E RF power amplifier operating at 868 MHz is designed and implemented using a 65nm CMOS process for low-power IoT applications. The design achieves a power-added efficiency of 62% with a 10 dBm output power. A compact impedance-matching network and envelope shaping are employed to reduce power consumption.'
+    abstract3 = 'We present a hybrid analog-digital beamforming architecture for mmWave massive MIMO systems using lens arrays and sparse channel estimation. Simulation results at 28 GHz show that our approach significantly reduces hardware complexity while achieving spectral efficiencies close to fully digital systems, making it ideal for 5G base stations.'
+    abstract4 = 'We propose a transformer-based architecture for few-shot learning that leverages cross-attention and meta-representation adaptation. Our model outperforms existing benchmarks on the MiniImageNet and CIFAR-FS datasets with a 12% increase in classification accuracy, showing its effectiveness in low-data environments.'
+    abstract5 = 'A computational study of unsteady flow around a rotating cylinder is conducted using Reynolds-Averaged Navier-Stokes equations. Results indicate a critical transition in vortex shedding frequency at specific Reynolds numbers, providing insight into drag reduction mechanisms for marine applications.'
+    abstract6 = 'We investigate the quantum Hall effect in monolayer MoS₂ using low-temperature magnetotransport measurements. Observed plateaus at integer filling factors confirm the presence of a two-dimensional electron gas and support the spin-valley locking hypothesis in transition metal dichalcogenides.'
+    abstract7 = 'A retrospective study of 1,200 breast cancer patients revealed that HER2 overexpression is correlated with poorer response to neoadjuvant chemotherapy. The use of trastuzumab improved disease-free survival by 35%, suggesting its continued utility in personalized oncology treatment protocols.'
+    abstract8 = 'This study evaluates the seismic performance of reinforced concrete shear walls retrofitted with fiber-reinforced polymers (FRP). Using shake table tests, results show a 40% improvement in ductility and a significant delay in structural failure under simulated earthquake loading.'
+    abstract9 = 'Through CRISPR/Cas9 editing, we knocked out the FOXP2 gene in mouse models to investigate its role in vocalization. The edited mice displayed altered ultrasonic vocal patterns, supporting the hypothesis that FOXP2 is critical for speech evolution and neurodevelopment.'
+    abstract10 = 'Using satellite-based aerosol optical depth data, we show that particulate emissions in South Asia significantly contribute to regional monsoon suppression. Climate models incorporating this data predict a 12% reduction in seasonal rainfall by 2050 under current emission trajectories.'
+    abstract11 = 'This paper explores the impact of framing effects on financial risk-taking among millennials. In a randomized experiment, subjects exposed to gain-framed messages were 24% more likely to invest in high-risk assets, highlighting the significance of behavioral nudges in policy design.'
+    abstract12 = 'We report the synthesis of a NiFe-layered double hydroxide nanosheet catalyst for oxygen evolution in alkaline electrolyzers. The catalyst shows an overpotential of only 240 mV at 10 mA/cm² and maintains stability over 100 hours, marking a step toward efficient water splitting.'
+    
+    field = await matcher.get_best_matching_fields(abstract4)
+    print(field)
 
 # Run main
 asyncio.run(main())
