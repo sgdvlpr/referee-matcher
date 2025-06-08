@@ -327,6 +327,41 @@ class RefereeMatcher:
 
         return flat_works
 
+    async def sort_works_by_relevance(self, works: list[dict], abstract: str) -> list[dict]:
+        """
+        Scores a list of works based on their relevance to the given abstract using an LLM.
+        Returns the same list, but each work now includes a `relevance_score` (0 to 10).
+        """
+        prompt = f"""
+            You are an expert research assistant.
+
+            You are given the abstract of a submitted paper. Your task is to score the **relevance** of a list of prior works to this paper. Relevance should be scored on a scale from **0 (not relevant)** to **10 (highly relevant)**.
+
+            For each work, you are given:
+            - Title (always present)
+            - Abstract (may be empty)
+            - Other metadata (for context, ignore in scoring)
+
+            ### Abstract of the submitted paper:
+            \"\"\"
+            {abstract}
+            \"\"\"
+
+            ### Instructions:
+            1. Read both the title and abstract of each work (use abstract if present, otherwise rely on title).
+            2. Compare the content to the submitted abstract.
+            3. Score each work with a `relevance_score` from 0 to 10.
+
+            Return the list in **JSON format**, sorting the list from most to least relevant, preserving all original fields and adding a new field `relevance_score` to each. Do not change the order or remove any information.
+
+            ### Works to Score:
+            {json.dumps(works, indent=4)}
+                    """
+
+        raw_output = await self.query_llm(prompt)
+        response = self.extract_json_array(raw_output)
+        return json.loads(response)
+
     async def get_top_referees(self, works: list[dict]) -> list[dict]:
         """
         Extract all unique top referees from a list of works.
@@ -606,7 +641,8 @@ async def main():
     abstract10 = 'Using satellite-based aerosol optical depth data, we show that particulate emissions in South Asia significantly contribute to regional monsoon suppression. Climate models incorporating this data predict a 12% reduction in seasonal rainfall by 2050 under current emission trajectories.'
     abstract11 = 'This paper explores the impact of framing effects on financial risk-taking among millennials. In a randomized experiment, subjects exposed to gain-framed messages were 24% more likely to invest in high-risk assets, highlighting the significance of behavioral nudges in policy design.'
     abstract12 = 'We report the synthesis of a NiFe-layered double hydroxide nanosheet catalyst for oxygen evolution in alkaline electrolyzers. The catalyst shows an overpotential of only 240 mV at 10 mA/cm² and maintains stability over 100 hours, marking a step toward efficient water splitting.'
-    
+    abstract13 = "Quantum many-body systems lie at the heart of modern condensed matter physics, quantum information science, and statistical mechanics. These systems consist of large ensembles of interacting particles whose collective quantum behavior gives rise to rich and often non-intuitive phenomena, such as quantum phase transitions, entanglement, and topological order. Understanding and simulating such systems remains a grand challenge due to the exponential complexity of their Hilbert space. Recent advances, including tensor network methods, quantum Monte Carlo, and machine learning-inspired approaches, have enabled significant progress in capturing the low-energy physics of various models. Moreover, experimental breakthroughs using ultracold atoms, superconducting qubits, and Rydberg atom arrays now allow precise control and observation of many-body dynamics in regimes once thought inaccessible. These developments are paving the way toward unraveling fundamental aspects of quantum matter and advancing technologies such as quantum simulation and computation."
+
     # field = await matcher.get_best_matching_fields(abstract6)
     # subfields_topics = await matcher.get_topics_for_selected_subfields(field)
     # filters = await matcher.filter_relevant_topics_for_subfields(abstract6, subfields_topics)
@@ -623,7 +659,8 @@ async def main():
 ]
     
     all_top_works = await matcher.fetch_all_topic_works(topics_data)
-    print(json.dumps(all_top_works, indent=4, ensure_ascii=False))
+    sorted_works = await matcher.sort_works_by_relevance(all_top_works, abstract13)
+    print(json.dumps(sorted_works, indent=4, ensure_ascii=False))
 
 # Run main
 asyncio.run(main())
