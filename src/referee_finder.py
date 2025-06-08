@@ -64,80 +64,6 @@ class RefereeMatcher:
         
         print(f"[WARN] Field ID {field_id} not found.")
         return []
-
-    async def get_top_works_for_topic(self, topic_id: str, top_n: int = 20, from_year: int = 2000, min_citations: int = 20):
-        """
-        Fetch top works from OpenAlex under a given topic ID.
-        Returns a list of structured works including author metadata.
-        """
-        base_url = f"{self.base_url}/works"
-        short_id = topic_id.split("/")[-1]
-        filters = [
-            f"topics.id:{short_id}",
-            f"publication_year:>{from_year}",
-            f"cited_by_count:>{min_citations}"
-        ]
-
-        params = {
-            "filter": ",".join(filters),
-            "sort": "cited_by_count:desc",  # Descending sort by citations
-            "per-page": 100,
-            "mailto": "scramjet14@gmail.com"
-        }
-
-        response = requests.get(base_url, params=params)
-        if response.status_code != 200:
-            print(f"Failed to fetch data for topic {topic_id}. Status code: {response.status_code}")
-            return []
-
-        works = response.json().get("results", [])
-
-        top_works = []
-        for work in works[:top_n]:
-            authorships = work.get("authorships", [])
-
-            if authorships:
-                top_authorship = authorships[0]
-                top_inst = top_authorship.get("institutions", [])
-                top_referee = {
-                    "name": top_authorship["author"]["display_name"],
-                    "id": top_authorship["author"].get("id"),
-                    "institution": top_inst[0]["display_name"] if top_inst else None
-                }
-
-                # Extract co-authors
-                referees = []
-                for referee in authorships[1:]:
-                    insts = referee.get("institutions", [])
-                    referees.append({
-                        "name": referee["author"]["display_name"],
-                        "id": referee["author"].get("id"),
-                        "institution": insts[0]["display_name"] if insts else None
-                    })
-            else:
-                top_referee = {
-                    "name": "Unknown",
-                    "id": None,
-                    "institution": None
-                }
-                referees = []
-
-            abstract_index = work.get("abstract_inverted_index", None)
-            if abstract_index:
-                abstract_text = self.abstract_index_to_text(abstract_index)
-            else:
-                abstract_text = ""
-            top_works.append({
-                "title": work.get("display_name"),
-                "abstract": abstract_text,
-                "top_referee": top_referee,
-                "alt_referees": referees,
-                "citations_count": work.get("cited_by_count"),
-                "year": work.get("publication_year"),
-                "url": work.get("id")
-            })
-
-        return top_works
   
     def extract_json_array(self, text: str) -> str:
         start = text.find('[')
@@ -316,47 +242,79 @@ class RefereeMatcher:
                 })
         return extracted_topics
 
-
-    async def fetch_top_works_for_topics(
-        self,
-        topic_data: List[Dict],
-        max_works_per_topic: int = 10,
-        min_citations: int = 15,
-        from_year: int = 2015
-    ) -> Dict[str, List[Dict]]:
+    async def get_top_works_for_topic(self, topic_id: str, top_n: int = 20, from_year: int = 2000, min_citations: int = 20):
         """
-        For each topic in topic_data, fetch top OpenAlex works filtered by citation count and publication date.
+        Fetch top works from OpenAlex under a given topic ID.
+        Returns a list of structured works including author metadata.
         """
-        results = {}
-        from_date = f"{from_year}-01-01"
+        base_url = f"{self.base_url}/works"
+        short_id = topic_id.split("/")[-1]
+        filters = [
+            f"topics.id:{short_id}", #  Try primary_topic.id: {short_id} later
+            f"publication_year:>{from_year}",
+            f"cited_by_count:>{min_citations}"
+        ]
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            for entry in topic_data:
-                for topic in entry["selected_topics"]:
-                    topic_id = topic["topic_id"].split("/")[-1]  # extract actual OpenAlex topic ID
-                    topic_name = topic["topic_name"]
+        params = {
+            "filter": ",".join(filters),
+            "sort": "cited_by_count:desc",  # Descending sort by citations
+            "per-page": 100,
+            "mailto": "scramjet14@gmail.com"
+        }
 
-                    params = {
-                        "filter": (
-                            f"topics.id:{topic_id},"
-                            f"type:journal-article,"
-                            f"from_publication_date:{from_date},"
-                            f"cited_by_count:>{min_citations}"
-                        ),
-                        "sort": "cited_by_count:desc",
-                        "per-page": max_works_per_topic
-                    }
+        response = requests.get(base_url, params=params)
+        if response.status_code != 200:
+            print(f"Failed to fetch data for topic {topic_id}. Status code: {response.status_code}")
+            return []
 
-                    try:
-                        response = await client.get(f"{self.base_url}/works", params=params)
-                        response.raise_for_status()
-                        works = response.json().get("results", [])
-                        results[topic_name] = works
-                    except Exception as e:
-                        print(f"Error fetching works for topic '{topic_name}': {e}")
-                        results[topic_name] = []
+        works = response.json().get("results", [])
 
-        return results
+        top_works = []
+        for work in works[:top_n]:
+            authorships = work.get("authorships", [])
+
+            if authorships:
+                top_authorship = authorships[0]
+                top_inst = top_authorship.get("institutions", [])
+                top_referee = {
+                    "name": top_authorship["author"]["display_name"],
+                    "id": top_authorship["author"].get("id"),
+                    "institution": top_inst[0]["display_name"] if top_inst else None
+                }
+
+                # Extract co-authors
+                referees = []
+                for referee in authorships[1:]:
+                    insts = referee.get("institutions", [])
+                    referees.append({
+                        "name": referee["author"]["display_name"],
+                        "id": referee["author"].get("id"),
+                        "institution": insts[0]["display_name"] if insts else None
+                    })
+            else:
+                top_referee = {
+                    "name": "Unknown",
+                    "id": None,
+                    "institution": None
+                }
+                referees = []
+
+            abstract_index = work.get("abstract_inverted_index", None)
+            if abstract_index:
+                abstract_text = self.abstract_index_to_text(abstract_index)
+            else:
+                abstract_text = ""
+            top_works.append({
+                "title": work.get("display_name"),
+                "abstract": abstract_text,
+                "top_referee": top_referee,
+                "alt_referees": referees,
+                "citations_count": work.get("cited_by_count"),
+                "year": work.get("publication_year"),
+                "url": work.get("id")
+            })
+
+        return top_works
 
     async def get_top_referees(self, works: list[dict]) -> list[dict]:
         """
@@ -638,13 +596,16 @@ async def main():
     abstract11 = 'This paper explores the impact of framing effects on financial risk-taking among millennials. In a randomized experiment, subjects exposed to gain-framed messages were 24% more likely to invest in high-risk assets, highlighting the significance of behavioral nudges in policy design.'
     abstract12 = 'We report the synthesis of a NiFe-layered double hydroxide nanosheet catalyst for oxygen evolution in alkaline electrolyzers. The catalyst shows an overpotential of only 240 mV at 10 mA/cm² and maintains stability over 100 hours, marking a step toward efficient water splitting.'
     
-    field = await matcher.get_best_matching_fields(abstract6)
-    subfields_topics = await matcher.get_topics_for_selected_subfields(field)
-    filters = await matcher.filter_relevant_topics_for_subfields(abstract6, subfields_topics)
-    topic_ids = matcher.extract_topic_ids(filters)
+    # field = await matcher.get_best_matching_fields(abstract6)
+    # subfields_topics = await matcher.get_topics_for_selected_subfields(field)
+    # filters = await matcher.filter_relevant_topics_for_subfields(abstract6, subfields_topics)
+    # topic_ids = matcher.extract_topic_ids(filters)
     # top_works = await matcher.fetch_top_works_for_topics(topic_ids)
 
-    print(json.dumps(topic_ids, indent=4, ensure_ascii=False))
+    topic_id = "https://openalex.org/T10321"
+    top_works = await matcher.get_top_works_for_topic(topic_id, from_year=2016)
+
+    print(json.dumps(top_works, indent=4, ensure_ascii=False))
 
 # Run main
 asyncio.run(main())
