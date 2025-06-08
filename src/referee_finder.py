@@ -309,6 +309,22 @@ class RefereeMatcher:
 
             return top_works
 
+    async def fetch_all_topic_works(client, topics_data, top_n_works=5):
+        """
+        Concurrently fetch top works for a list of topics.
+        """
+        tasks = []
+        for topic in topics_data[:3]:  # Top 3 only
+            topic_id = topic["topic_id"]
+            tasks.append(
+                asyncio.create_task(client.get_top_works_for_topic(topic_id, top_n=top_n_works))
+            )
+
+        all_works = await asyncio.gather(*tasks)
+        return {
+            topics_data[i]["topic_name"]: all_works[i] for i in range(len(all_works))
+        }
+
     async def get_top_referees(self, works: list[dict]) -> list[dict]:
         """
         Extract all unique top referees from a list of works.
