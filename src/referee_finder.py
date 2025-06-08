@@ -231,8 +231,78 @@ class RefereeMatcher:
 
         return result
     
-    #  Just for illustration - build on top of that when you are back on 1404/03/17
-    async def filter_relevant_works(self, abstract: str, works: List[Dict]) -> List[Dict]:
+    async def filter_relevant_topics_for_subfields(self, abstract: str, subfield_topic_data: List[Dict]) -> List[Dict]:
+        """
+        Use LLM to filter and return the most relevant topic(s) for each selected subfield,
+        based on their match with the abstract.
+        
+        Parameters:
+            abstract (str): The research abstract.
+            subfield_topic_data (List[Dict]): Output from `get_topics_for_selected_subfields`, 
+                a list where each item has:
+                    - subfield_name
+                    - subfield_id
+                    - topics: List[Dict] with topic_name, topic_id, keywords, description
+
+        Returns:
+            List[Dict]: Each item includes:
+                - subfield_name
+                - subfield_id
+                - selected_topic(s) with name, id, reason
+        """
+        prompt = f"""
+            You are an expert in academic field classification. You will be given:
+            1. A scientific abstract,
+            2. A list of subfields, each with its associated OpenAlex topics (name, keywords, description).
+
+            Your job is to identify the **most relevant topic(s)** (at least 3) under each subfield. You must analyze how closely each topic aligns with the abstract’s core focus, contribution, and terminology.
+
+            Avoid choosing topics just based on keyword overlap — prioritize **semantic alignment and intent**. Return your answer in this exact JSON format:
+
+            [
+            {{
+                "subfield_name": "Subfield Name",
+                "subfield_id": "Subfield ID",
+                "selected_topics": [
+                {{
+                    "topic_name": "Topic Name",
+                    "topic_id": "Topic ID",
+                    "reason": "Short reason explaining why this topic is a good match for the abstract."
+                }}
+                ]
+            }},
+            ...
+            ]
+
+            Abstract:
+            \"\"\"
+            {abstract}
+            \"\"\"
+
+            Subfield and topic candidates:
+            {subfield_topic_data}
+        """
+
+        response = self.llm_client.chat.completions.create(
+            model="openai/gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        raw_output = response.choices[0].message.content.strip()
+
+        # Try to extract the JSON content from inside code block if present
+        json_data = self.extract_json_array(raw_output)
+
+        try:
+            filtered_topics = json.loads(json_data)
+        except json.JSONDecodeError as e:
+            print("Error parsing JSON:", e)
+            print("Raw LLM output:\n", raw_output)
+            return []
+
+        return filtered_topics
+
+    async def filter_relevant_works_for_selected_topics(self, abstract: str, works: List[Dict]) -> List[Dict]:
         """
         Use Gemini to evaluate and filter works that are highly relevant to the abstract.
         Returns a filtered list of works.
@@ -543,9 +613,9 @@ async def main():
     abstract12 = 'We report the synthesis of a NiFe-layered double hydroxide nanosheet catalyst for oxygen evolution in alkaline electrolyzers. The catalyst shows an overpotential of only 240 mV at 10 mA/cm² and maintains stability over 100 hours, marking a step toward efficient water splitting.'
     
     field = await matcher.get_best_matching_fields(abstract6)
-    topics = await matcher.get_topics_for_selected_subfields(field)
-    #print("field", field)
-    print(json.dumps(topics, indent=4, ensure_ascii=False))
+    subfields_topics = await matcher.get_topics_for_selected_subfields(field)
+    filters = await matcher.filter_relevant_topics_for_subfields(abstract6, subfields_topics)
+    print(json.dumps(filters, indent=4, ensure_ascii=False))
 
 # Run main
 asyncio.run(main())
