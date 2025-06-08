@@ -139,6 +139,13 @@ class RefereeMatcher:
 
         return top_works
   
+    def extract_json_array(self, text: str) -> str:
+        start = text.find('[')
+        end = text.rfind(']')
+        if start != -1 and end != -1 and end > start:
+            return text[start:end+1]
+        return text  # fallback to original if no brackets found
+
     async def get_best_matching_fields(self, abstract: str) -> Dict:
         """
         Use LLM to find the most relevant field from OpenAlex metadata based on the abstract.
@@ -180,45 +187,51 @@ class RefereeMatcher:
         )
 
         answer = response.choices[0].message.content.strip()
-        return answer
+        clean_answer = self.extract_json_array(answer)
 
-    # Just for illustration - build on top of that when you are back on 1404/03/17
-    async def extract_topics_from_abstract(self, abstract: str, subfield_topics: List[Dict]) -> List[Dict]:
-        """
-        Uses Gemini to select the most relevant topics from subfield_topics based on abstract.
-        Returns a list of matching topic dicts.
-        """
-        # Build prompt for Gemini
-        topic_descriptions = "\n".join(
-            f"{idx+1}. {t['topic_name']} - Keywords: {', '.join(t.get('keywords', []))}\nDescription: {t.get('description', 'No description')}"
-            for idx, t in enumerate(subfield_topics)
-        )
-        
-        prompt = (
-            f"Given the abstract of a research paper:\n\"\"\"\n{abstract}\n\"\"\"\n\n"
-            f"Select the most relevant topics from the following list (by number) that best match this abstract. "
-            f"Return the numbers as a comma-separated list.\n\nTopics:\n{topic_descriptions}\n"
-        )
-
-        # Call Gemini LLM (replace with your actual async API call)
-        response = await self.call_gemini(prompt)
-
-        # Parse response to get topic numbers
-        # Expected output example: "1, 3, 5"
-        selected_indices = []
         try:
-            # Extract numbers from response
-            selected_indices = [int(num.strip()) - 1 for num in response.split(",") if num.strip().isdigit()]
-        except Exception:
-            # Fallback empty if parsing fails
-            selected_indices = []
+            selected_subfields = json.loads(clean_answer)
+        except json.JSONDecodeError as e:
+            print("Error parsing JSON:", e)
+            print("Cleaned text was:", repr(clean_answer))
+            selected_subfields = []
 
-        # Filter topics based on indices
-        matched_topics = [subfield_topics[i] for i in selected_indices if 0 <= i < len(subfield_topics)]
-
-        return matched_topics
+        return selected_subfields
     
-    # Just for illustration - build on top of that when you are back on 1404/03/17
+    async def get_topics_for_selected_subfields(self, top_subfields: list) -> Dict[str, List[Dict[str, str]]]:
+        """
+        Given a JSON string with selected subfields, find and return their topics from the OpenAlex metadata file.
+        """
+        # Load the OpenAlex metadata from file
+        with open(self.fields_metadata, "r", encoding="utf-8") as f:
+            metadata = json.load(f)
+
+        # Create output dict
+        result = {}
+
+        # Traverse each selected subfield
+        for subfield in top_subfields:
+            subfield_id = subfield["selected_subfield_id"]
+            subfield_name = subfield["selected_subfield_name"]
+
+            # Search the subfield in the metadata
+            for field in metadata:
+                for sf in field["subfields"]:
+                    if sf["subf_id"] == subfield_id:
+                        # Extract and format topics
+                        topics = [
+                            {
+                                "topic_name": topic["topic_name"],
+                                "topic_id": topic["topic_id"]
+                            }
+                            for topic in sf.get("subf_topics", [])
+                        ]
+                        result[subfield_name] = topics
+                        break  # subfield found, no need to continue inner loop
+
+        return result
+    
+    #  Just for illustration - build on top of that when you are back on 1404/03/17
     async def filter_relevant_works(self, abstract: str, works: List[Dict]) -> List[Dict]:
         """
         Use Gemini to evaluate and filter works that are highly relevant to the abstract.
@@ -529,8 +542,10 @@ async def main():
     abstract11 = 'This paper explores the impact of framing effects on financial risk-taking among millennials. In a randomized experiment, subjects exposed to gain-framed messages were 24% more likely to invest in high-risk assets, highlighting the significance of behavioral nudges in policy design.'
     abstract12 = 'We report the synthesis of a NiFe-layered double hydroxide nanosheet catalyst for oxygen evolution in alkaline electrolyzers. The catalyst shows an overpotential of only 240 mV at 10 mA/cm² and maintains stability over 100 hours, marking a step toward efficient water splitting.'
     
-    field = await matcher.get_best_matching_fields(abstract4)
-    print(field)
+    field = await matcher.get_best_matching_fields(abstract6)
+    topics = await matcher.get_topics_for_selected_subfields(field)
+    #print("field", field)
+    print(json.dumps(topics, indent=4, ensure_ascii=False))
 
 # Run main
 asyncio.run(main())
