@@ -242,7 +242,7 @@ class RefereeMatcher:
                 })
         return extracted_topics
 
-    async def get_top_works_for_topic(self, topic_id: str, top_n: int = 5, from_year: int = 2016, min_citations: int = 20):
+    async def get_top_works_for_topic(self, topic_id: str, top_n: int = 2, from_year: int = 2016, min_citations: int = 20):
         """
         Async version: Fetch top works under a given topic ID.
         """
@@ -304,14 +304,16 @@ class RefereeMatcher:
                     "alt_referees": referees,
                     "citations_count": work.get("cited_by_count"),
                     "year": work.get("publication_year"),
-                    "url": work.get("id")
+                    "url": work.get("id"),
+                    "citation_percentile": work.get("cited_by_percentile_year", {}).get("max", 0)  # Normalized metric
                 })
 
             return top_works
 
-    async def fetch_all_topic_works(client, topics_data, top_n_works=5):
+    # Should return unique works - currently it doesn't
+    async def fetch_all_topic_works(client, topics_data, top_n_works=2):
         """
-        Concurrently fetch top works for a list of topics.
+        Concurrently fetch top works for a list of topics and return a flat list.
         """
         tasks = []
         for topic in topics_data[:3]:  # Top 3 only
@@ -320,10 +322,12 @@ class RefereeMatcher:
                 asyncio.create_task(client.get_top_works_for_topic(topic_id, top_n=top_n_works))
             )
 
-        all_works = await asyncio.gather(*tasks)
-        return {
-            topics_data[i]["topic_name"]: all_works[i] for i in range(len(all_works))
-        }
+        all_works_nested = await asyncio.gather(*tasks)
+
+        # Flatten the list of lists into a single list
+        flat_works = [work for sublist in all_works_nested for work in sublist]
+
+        return flat_works
 
     async def get_top_referees(self, works: list[dict]) -> list[dict]:
         """
