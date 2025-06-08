@@ -242,79 +242,72 @@ class RefereeMatcher:
                 })
         return extracted_topics
 
-    async def get_top_works_for_topic(self, topic_id: str, top_n: int = 20, from_year: int = 2000, min_citations: int = 20):
+    async def get_top_works_for_topic(self, topic_id: str, top_n: int = 5, from_year: int = 2016, min_citations: int = 20):
         """
-        Fetch top works from OpenAlex under a given topic ID.
-        Returns a list of structured works including author metadata.
+        Async version: Fetch top works under a given topic ID.
         """
         base_url = f"{self.base_url}/works"
         short_id = topic_id.split("/")[-1]
         filters = [
-            f"topics.id:{short_id}", #  Try primary_topic.id: {short_id} later
+            f"primary_topic.id:{short_id}",
             f"publication_year:>{from_year}",
             f"cited_by_count:>{min_citations}"
         ]
 
         params = {
             "filter": ",".join(filters),
-            "sort": "cited_by_count:desc",  # Descending sort by citations
+            "sort": "cited_by_count:desc",
             "per-page": 100,
             "mailto": "scramjet14@gmail.com"
         }
 
-        response = requests.get(base_url, params=params)
-        if response.status_code != 200:
-            print(f"Failed to fetch data for topic {topic_id}. Status code: {response.status_code}")
-            return []
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            try:
+                response = await client.get(base_url, params=params)
+                response.raise_for_status()
+            except Exception as e:
+                print(f"Error fetching works for topic {topic_id}: {e}")
+                return []
 
-        works = response.json().get("results", [])
+            works = response.json().get("results", [])
 
-        top_works = []
-        for work in works[:top_n]:
-            authorships = work.get("authorships", [])
+            top_works = []
+            for work in works[:top_n]:
+                authorships = work.get("authorships", [])
+                if authorships:
+                    top_authorship = authorships[0]
+                    top_inst = top_authorship.get("institutions", [])
+                    top_referee = {
+                        "name": top_authorship["author"]["display_name"],
+                        "id": top_authorship["author"].get("id"),
+                        "institution": top_inst[0]["display_name"] if top_inst else None
+                    }
+                    referees = [
+                        {
+                            "name": co["author"]["display_name"],
+                            "id": co["author"].get("id"),
+                            "institution": co.get("institutions", [{}])[0].get("display_name")
+                        }
+                        for co in authorships[1:]
+                    ]
+                else:
+                    top_referee = {"name": "Unknown", "id": None, "institution": None}
+                    referees = []
 
-            if authorships:
-                top_authorship = authorships[0]
-                top_inst = top_authorship.get("institutions", [])
-                top_referee = {
-                    "name": top_authorship["author"]["display_name"],
-                    "id": top_authorship["author"].get("id"),
-                    "institution": top_inst[0]["display_name"] if top_inst else None
-                }
+                abstract_index = work.get("abstract_inverted_index", None)
+                abstract_text = self.abstract_index_to_text(abstract_index) if abstract_index else ""
 
-                # Extract co-authors
-                referees = []
-                for referee in authorships[1:]:
-                    insts = referee.get("institutions", [])
-                    referees.append({
-                        "name": referee["author"]["display_name"],
-                        "id": referee["author"].get("id"),
-                        "institution": insts[0]["display_name"] if insts else None
-                    })
-            else:
-                top_referee = {
-                    "name": "Unknown",
-                    "id": None,
-                    "institution": None
-                }
-                referees = []
+                top_works.append({
+                    "title": work.get("display_name"),
+                    "abstract": abstract_text,
+                    "top_referee": top_referee,
+                    "alt_referees": referees,
+                    "citations_count": work.get("cited_by_count"),
+                    "year": work.get("publication_year"),
+                    "url": work.get("id")
+                })
 
-            abstract_index = work.get("abstract_inverted_index", None)
-            if abstract_index:
-                abstract_text = self.abstract_index_to_text(abstract_index)
-            else:
-                abstract_text = ""
-            top_works.append({
-                "title": work.get("display_name"),
-                "abstract": abstract_text,
-                "top_referee": top_referee,
-                "alt_referees": referees,
-                "citations_count": work.get("cited_by_count"),
-                "year": work.get("publication_year"),
-                "url": work.get("id")
-            })
-
-        return top_works
+            return top_works
 
     async def get_top_referees(self, works: list[dict]) -> list[dict]:
         """
@@ -582,7 +575,7 @@ async def main():
     field_id = "https://openalex.org/fields/27"
     subf_id = "https://openalex.org/subfields/2703"
     
-    abstract = 'Injection locking characteristics of oscillators are derived and a graphical analysis is presented that describes injection pulling in time and frequency domains. An identity obtained from phase and envelope equations is used to express the requisite oscillator nonlinearity and interpret phase noise reduction. The behavior of phase-locked oscillators under injection pulling is also formulated.'
+    abstract0 = 'Injection locking characteristics of oscillators are derived and a graphical analysis is presented that describes injection pulling in time and frequency domains. An identity obtained from phase and envelope equations is used to express the requisite oscillator nonlinearity and interpret phase noise reduction. The behavior of phase-locked oscillators under injection pulling is also formulated.'
     abstract1 = 'This study introduces a deep convolutional neural network model trained on retinal fundus images to automatically detect signs of diabetic retinopathy. Using a dataset of 35,000 annotated images, our model achieves an AUC of 0.96, outperforming existing computer-aided diagnostic tools. The approach demonstrates potential for large-scale automated screening.'
     abstract2 = 'A class-E RF power amplifier operating at 868 MHz is designed and implemented using a 65nm CMOS process for low-power IoT applications. The design achieves a power-added efficiency of 62% with a 10 dBm output power. A compact impedance-matching network and envelope shaping are employed to reduce power consumption.'
     abstract3 = 'We present a hybrid analog-digital beamforming architecture for mmWave massive MIMO systems using lens arrays and sparse channel estimation. Simulation results at 28 GHz show that our approach significantly reduces hardware complexity while achieving spectral efficiencies close to fully digital systems, making it ideal for 5G base stations.'
@@ -603,9 +596,16 @@ async def main():
     # top_works = await matcher.fetch_top_works_for_topics(topic_ids)
 
     topic_id = "https://openalex.org/T10321"
-    top_works = await matcher.get_top_works_for_topic(topic_id, from_year=2016)
 
-    print(json.dumps(top_works, indent=4, ensure_ascii=False))
+    topics_data = [
+    {"topic_id": "https://openalex.org/T10622", "topic_name": "Quantum Mechanics and Applications"},
+    {"topic_id": "https://openalex.org/T11804", "topic_name": "Quantum many-body systems"},
+    {"topic_id": "https://openalex.org/T10275", "topic_name": "2D Materials and Applications"},
+    # ... possibly more, but we want just the top 3
+]
+    
+    all_top_works = await matcher.fetch_all_topic_works(topics_data)
+    print(json.dumps(all_top_works, indent=4, ensure_ascii=False))
 
 # Run main
 asyncio.run(main())
