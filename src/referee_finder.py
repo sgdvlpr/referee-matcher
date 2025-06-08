@@ -302,35 +302,68 @@ class RefereeMatcher:
 
         return filtered_topics
 
-    async def filter_relevant_works_for_selected_topics(self, abstract: str, works: List[Dict]) -> List[Dict]:
+    def extract_topic_ids(self, subfield_topic_data: List[Dict]) -> List[str]:
         """
-        Use Gemini to evaluate and filter works that are highly relevant to the abstract.
-        Returns a filtered list of works.
+        Extract unique topic IDs from the AI-ranked topics under each subfield.
+        This works with the structure returned by `get_topics_for_selected_subfields`.
         """
-        prompt = f"""
-        You are helping select scientific works that are highly relevant to a given abstract.
+        topic_ids = set()
+        for subfield in subfield_topic_data:
+            selected_topics = subfield.get("selected_topics", [])
+            for topic in selected_topics:
+                topic_id = topic.get("topic_id")
+                if topic_id:
+                    topic_ids.add(topic_id)
+        return list(topic_ids)
 
-        Abstract:
-        \"\"\"
-        {abstract}
-        \"\"\"
-
-        Below is a list of candidate works. Each has a title and short description. Which ones are most relevant to the abstract?
-
-        Candidate works:
-        {json.dumps([
-            {"title": w["title"], "venue": w.get("venue"), "year": w.get("year")}
-            for w in works
-        ], indent=2)}
-
-        Return the list of most relevant work titles as a JSON array.
+    async def fetch_top_works_for_topics(
+        self,
+        topic_ids: List[str],
+        abstract: str,
+        max_works_per_topic: int = 50,
+        min_publication_year: int = 2017,
+        min_citations: int = 15,
+        max_total_works: int = 150
+    ) -> List[Dict]:
         """
+        Fetch top works from OpenAlex for each topic and re-rank them using semantic similarity to the abstract.
+        Applies filters: publication date, citation count, and work type.
+        """
+        import datetime
+        import httpx
 
-        response = self.llm_chat(prompt)
-        selected_titles = self._parse_json_list_response(response)
+        all_works = []
+        from_date = f"{min_publication_year}-01-01"
+        
+        async with httpx.AsyncClient() as client:
+            for topic_id in topic_ids:
+                url = f"{self.base_url}/works"
+                params = {
+                    "filter": f"topics.id:{topic_id},type:journal-article,from_publication_date:{from_date}",
+                    "sort": "cited_by_count:desc",
+                    "per-page": max_works_per_topic
+                }
 
-        matched_works = [w for w in works if w["title"] in selected_titles]
-        return matched_works
+                try:
+                    response = await client.get(url, params=params)
+                    response.raise_for_status()
+                    works = response.json().get("results", [])
+                    
+                    # Additional citation filtering
+                    filtered = [
+                        w for w in works
+                        if w.get("cited_by_count", 0) >= min_citations
+                    ]
+                    all_works.extend(filtered)
+
+                except httpx.HTTPError as e:
+                    print(f"Error fetching works for topic {topic_id}: {e}")
+
+        # Limit total works before sending to AI
+        all_works = all_works[:max_total_works]
+
+        # Re-rank using LLM
+        return await self.re_rank_works_by_relevance(all_works, abstract)
 
     async def get_top_referees(self, works: list[dict]) -> list[dict]:
         """
@@ -615,7 +648,8 @@ async def main():
     field = await matcher.get_best_matching_fields(abstract6)
     subfields_topics = await matcher.get_topics_for_selected_subfields(field)
     filters = await matcher.filter_relevant_topics_for_subfields(abstract6, subfields_topics)
-    print(json.dumps(filters, indent=4, ensure_ascii=False))
+    topic_ids = matcher.extract_topic_ids(filters)
+    print(json.dumps(topic_ids, indent=4, ensure_ascii=False))
 
 # Run main
 asyncio.run(main())
