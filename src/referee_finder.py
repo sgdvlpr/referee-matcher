@@ -28,6 +28,19 @@ class RefereeMatcher:
             api_key=LIARA_API_KEY
         )
 
+    async def query_llm(self, prompt):
+        response = self.llm_client.chat.completions.create(
+            model="openai/gpt-4o-mini",
+            messages=[
+                {
+                    "role": "user", 
+                    "content": prompt
+                }
+            ]
+        )
+
+        return response.choices[0].message.content.strip()
+
     async def set_conflict_ids(self):
         """
         Sets the global CONFLICT_IDS variable using concurrent coauthor fetching.
@@ -102,17 +115,7 @@ class RefereeMatcher:
             {subfields}
             """
 
-        response = self.llm_client.chat.completions.create(
-            model="openai/gpt-4o-mini",
-            messages=[
-                {
-                    "role": "user", 
-                    "content": prompt
-                }
-            ]
-        )
-
-        answer = response.choices[0].message.content.strip()
+        answer = await self.query_llm(prompt)
         clean_answer = self.extract_json_array(answer)
 
         try:
@@ -209,12 +212,7 @@ class RefereeMatcher:
             {subfield_topic_data}
         """
 
-        response = self.llm_client.chat.completions.create(
-            model="openai/gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}]
-        )
-
-        raw_output = response.choices[0].message.content.strip()
+        raw_output = await self.query_llm(prompt)
 
         # Try to extract the JSON content from inside code block if present
         json_data = self.extract_json_array(raw_output)
