@@ -27,6 +27,7 @@ class RefereeMatcher:
             base_url="https://ai.liara.ir/api/v1/68444daf64f28c83a27063e1",
             api_key=LIARA_API_KEY
         )
+        self.mailto = "scramjet14@gmail.com"
 
     async def query_llm(self, prompt):
         response = self.llm_client.chat.completions.create(
@@ -342,7 +343,7 @@ class RefereeMatcher:
 
         return flat_works
 
-    async def sort_works_by_relevance1(self, works: list[dict], abstract: str) -> list[dict]:
+    async def sort_works_by_relevance(self, works: list[dict], abstract: str) -> list[dict]:
         """
         Scores a list of works based on their relevance to the given abstract using an LLM.
         Sends only minimal fields: abstract (or title if abstract is missing) + URL for mapping.
@@ -400,104 +401,60 @@ class RefereeMatcher:
         author_id: str,
         from_year: int = None,
         min_citations: int = 0,
-        max_citations: int = None,
-        max_works: int = 20
+        max_citations: int = 1_000_000
     ) -> list[dict]:
         """
-        Fetch recent works by a given author with optional filters on year and citation count.
+        Fetch all works authored by `author_id` from `from_year` onward, applying citation filters.
+        Continues paginating until no more qualifying works are found or older than `from_year`.
         """
         url = f"{self.base_url}/works"
-        params = {
-            "filter": f"author.id:{author_id}",
-            "sort": "publication_year:desc,cited_by_count:desc",
-            "per-page": max_works
-        }
+        cursor = "*"
+        all_filtered_works = []
 
         async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.get(url, params=params)
-            resp.raise_for_status()
-            data = resp.json()
+            while True:
+                params = {
+                    "filter": f"author.id:{author_id}",
+                    "sort": "publication_year:desc,cited_by_count:desc",
+                    "per-page": 50,
+                    "cursor": cursor,
+                    "mailto": self.mailto
+                }
+                resp = await client.get(url, params=params)
+                resp.raise_for_status()
+                data = resp.json()
 
-        filtered_works = []
-        for w in data.get("results", []):
-            year = w.get("publication_year")
-            citations = w.get("cited_by_count", 0)
+                new_filtered = []
+                for w in data.get("results", []):
+                    year = w.get("publication_year")
+                    citations = w.get("cited_by_count", 0)
 
-            if from_year and (not year or year < from_year):
-                continue
-            if citations < min_citations:
-                continue
-            if max_citations is not None and citations > max_citations:
-                continue
+                    # Stop condition: year too old
+                    if from_year and year and year < from_year:
+                        return all_filtered_works
 
-            abstract_index = w.get("abstract_inverted_index")
-            abstract_text = self.abstract_index_to_text(abstract_index) if abstract_index else ""
+                    if citations < min_citations or citations > max_citations:
+                        continue
 
-            filtered_works.append({
-                "id": w["id"],
-                "title": w.get("title", ""),
-                "abstract": abstract_text,
-                "publication_year": year,
-                "citation_count": citations,
-            })
+                    abstract_index = w.get("abstract_inverted_index")
+                    abstract_text = self.abstract_index_to_text(abstract_index) if abstract_index else ""
 
-        return filtered_works
+                    new_filtered.append({
+                        "id": w["id"],
+                        "title": w.get("title", ""),
+                        "abstract": abstract_text,
+                        "publication_year": year,
+                        "citation_count": citations,
+                    })
 
-    async def sort_works_by_relevance(self, works: list[dict], abstract: str) -> list[dict]:
-        """
-        Scores a list of works based on their relevance to the given abstract using an LLM.
-        Sends only minimal fields: abstract (or title if abstract is missing) + URL for mapping.
-        Reattaches full original metadata after scoring.
-        Filters out works with relevance_score <= 6.0.
-        """
-        # Step 1: Build lookup table and minimal input
-        id_to_work = {work["url"]: work for work in works}
-        minimal_works = []
-        for work in works:
-            minimal_works.append({
-                "url": work["url"],
-                "abstract": work.get("abstract", ""),
-                "title": work.get("title", "")
-            })
+                all_filtered_works.extend(new_filtered)
 
-        # Step 2: Prompt
-        prompt = f"""
-        You are an expert research assistant.
+                next_cursor = data.get("meta", {}).get("next_cursor")
+                if not next_cursor or not data.get("results"):
+                    break
+                cursor = next_cursor
 
-        You are given the abstract of a submitted paper. Your task is to score the **relevance** of a list of prior works to this paper. Relevance should be scored on a scale from **0 (not relevant)** to **10 (highly relevant)**.
-
-        For each work, you are given:
-        - Abstract (may be empty)
-        - Title 
-        - URL (for identification)
-
-        ### Abstract of the submitted paper:
-        \"\"\"{abstract}\"\"\"
-
-        ### Instructions:
-        1. Use the abstract if present, otherwise use the title.
-        2. Score each work with a relevance_score from 0.0 to 10.0 (e.g., 7.3, 9.6).
-        3. Keep the original fields (abstract, title, url) and **add** a `relevance_score`.
-
-        Return a JSON array, **sorted from most to least relevant**.
-
-        ### Works to Score:
-        {json.dumps(minimal_works, indent=2)}
-        """
-
-        raw_output = await self.query_llm(prompt)
-        response = self.extract_json_array(raw_output)
-        scored_minimal = json.loads(response)
-
-        # Step 3: Reattach full metadata with scores and filter by threshold
-        enriched = []
-        for scored in scored_minimal:
-            score = scored.get("relevance_score", 0)
-            if score >= 6.0:
-                original = id_to_work.get(scored["url"], {})
-                enriched.append({**original, "relevance_score": score})
-
-        return enriched
+        return all_filtered_works
 
     async def get_top_referees(
         self,
@@ -505,7 +462,6 @@ class RefereeMatcher:
         from_year: int = None,
         min_citations: int = 0,
         max_citations: int = None,
-        max_works_per_referee: int = 20
     ) -> list[dict]:
         """
         Extract unique top referees from a list of works, along with their recent works.
@@ -534,7 +490,6 @@ class RefereeMatcher:
                     from_year=from_year,
                     min_citations=min_citations,
                     max_citations=max_citations,
-                    max_works=max_works_per_referee
                 )
 
                 top_referees.append({
@@ -732,7 +687,7 @@ async def main():
     all_top_works = await matcher.fetch_all_topic_works(topics_data)
 
     sorted_works = await matcher.sort_works_by_relevance(all_top_works, abstract13)
-    top_refs = await matcher.get_top_referees(sorted_works, from_year=2016)
+    top_refs = await matcher.get_top_referees(sorted_works, from_year=2016, min_citations=10, max_citations=50)
     
     # Save to a file
     with open("top_refs.json", "w", encoding="utf-8") as f:
