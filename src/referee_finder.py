@@ -343,23 +343,7 @@ class RefereeMatcher:
 
         return flat_works
 
-    def prune_works_for_scoring(self, works: list[dict]) -> list[dict]:
-        """
-        Reduces works to only the fields needed for relevance scoring:
-        - title
-        - abstract
-        - url (from 'id')
-        """
-        return [
-            {
-                "title": work.get("title", ""),
-                "abstract": work.get("abstract", ""),
-                "url": work.get("id", "")
-            }
-            for work in works
-        ]
-
-    async def sort_works_by_relevance(self, works: list[dict], abstract: str) -> list[dict]:
+    async def sort_works_by_relevance1(self, works: list[dict], abstract: str) -> list[dict]:
         """
         Scores a list of works based on their relevance to the given abstract using an LLM.
         Sends only minimal fields: abstract (or title if abstract is missing) + URL for mapping.
@@ -409,6 +393,62 @@ class RefereeMatcher:
         for scored in scored_minimal:
             original = id_to_work.get(scored["url"], {})
             enriched.append({**original, "relevance_score": scored.get("relevance_score", 0)})
+
+        return enriched
+
+    async def sort_works_by_relevance(self, works: list[dict], abstract: str) -> list[dict]:
+        """
+        Scores a list of works based on their relevance to the given abstract using an LLM.
+        Sends only minimal fields: abstract (or title if abstract is missing) + URL for mapping.
+        Reattaches full original metadata after scoring.
+        Filters out works with relevance_score <= 6.0.
+        """
+        # Step 1: Build lookup table and minimal input
+        id_to_work = {work["url"]: work for work in works}
+        minimal_works = []
+        for work in works:
+            minimal_works.append({
+                "url": work["url"],
+                "abstract": work.get("abstract", ""),
+                "title": work.get("title", "")
+            })
+
+        # Step 2: Prompt
+        prompt = f"""
+        You are an expert research assistant.
+
+        You are given the abstract of a submitted paper. Your task is to score the **relevance** of a list of prior works to this paper. Relevance should be scored on a scale from **0 (not relevant)** to **10 (highly relevant)**.
+
+        For each work, you are given:
+        - Abstract (may be empty)
+        - Title 
+        - URL (for identification)
+
+        ### Abstract of the submitted paper:
+        \"\"\"{abstract}\"\"\"
+
+        ### Instructions:
+        1. Use the abstract if present, otherwise use the title.
+        2. Score each work with a relevance_score from 0.0 to 10.0 (e.g., 7.3, 9.6).
+        3. Keep the original fields (abstract, title, url) and **add** a `relevance_score`.
+
+        Return a JSON array, **sorted from most to least relevant**.
+
+        ### Works to Score:
+        {json.dumps(minimal_works, indent=2)}
+        """
+
+        raw_output = await self.query_llm(prompt)
+        response = self.extract_json_array(raw_output)
+        scored_minimal = json.loads(response)
+
+        # Step 3: Reattach full metadata with scores and filter by threshold
+        enriched = []
+        for scored in scored_minimal:
+            score = scored.get("relevance_score", 0)
+            if score >= 6.0:
+                original = id_to_work.get(scored["url"], {})
+                enriched.append({**original, "relevance_score": score})
 
         return enriched
 
@@ -712,7 +752,7 @@ async def main():
 
     sorted_works = await matcher.sort_works_by_relevance(all_top_works, abstract13)
     # Save to a file
-    with open("sorted_works4.json", "w", encoding="utf-8") as f:
+    with open("sorted_works.json", "w", encoding="utf-8") as f:
         json.dump(sorted_works, f, ensure_ascii=False, indent=2)
 
 # Run main
