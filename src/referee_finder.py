@@ -395,6 +395,54 @@ class RefereeMatcher:
 
         return enriched
 
+    async def fetch_recent_filtered_works(
+        self,
+        author_id: str,
+        from_year: int = None,
+        min_citations: int = 0,
+        max_citations: int = None,
+        max_works: int = 20
+    ) -> list[dict]:
+        """
+        Fetch recent works by a given author with optional filters on year and citation count.
+        """
+        url = f"{self.base_url}/works"
+        params = {
+            "filter": f"author.id:{author_id}",
+            "sort": "publication_year:desc,cited_by_count:desc",
+            "per-page": max_works
+        }
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(url, params=params)
+            resp.raise_for_status()
+            data = resp.json()
+
+        filtered_works = []
+        for w in data.get("results", []):
+            year = w.get("publication_year")
+            citations = w.get("cited_by_count", 0)
+
+            if from_year and (not year or year < from_year):
+                continue
+            if citations < min_citations:
+                continue
+            if max_citations is not None and citations > max_citations:
+                continue
+
+            abstract_index = w.get("abstract_inverted_index")
+            abstract_text = self.abstract_index_to_text(abstract_index) if abstract_index else ""
+
+            filtered_works.append({
+                "id": w["id"],
+                "title": w.get("title", ""),
+                "abstract": abstract_text,
+                "publication_year": year,
+                "citation_count": citations,
+            })
+
+        return filtered_works
+
     async def sort_works_by_relevance(self, works: list[dict], abstract: str) -> list[dict]:
         """
         Scores a list of works based on their relevance to the given abstract using an LLM.
@@ -456,12 +504,12 @@ class RefereeMatcher:
         works: list[dict],
         from_year: int = None,
         min_citations: int = 0,
+        max_citations: int = None,
         max_works_per_referee: int = 20
     ) -> list[dict]:
         """
-        Extract all unique top referees from a list of works and enrich each with recent filtered works.
-        Each referee includes name, OpenAlex ID, institution, and a list of their recent works.
-        Submitting authors are excluded but their co-authors are flagged.
+        Extract unique top referees from a list of works, along with their recent works.
+        Submitting authors are excluded. Co-authors are flagged.
         """
         await self.set_conflict_ids()
 
@@ -472,6 +520,7 @@ class RefereeMatcher:
             referee = work.get("top_referee", {})
             referee_id = referee.get("id")
 
+            # Exclude if referee is a submitting author or already seen or in conflict
             if (
                 referee_id
                 and referee_id not in seen_ids
@@ -479,39 +528,14 @@ class RefereeMatcher:
             ):
                 seen_ids.add(referee_id)
 
-                # Fetch recent works for referee
-                url = f"{self.base_url}/works"
-                params = {
-                    "filter": f"author.id:{referee_id}",
-                    "sort": "publication_year:desc,cited_by_count:desc",
-                    "per-page": max_works_per_referee
-                }
-
-                async with httpx.AsyncClient(timeout=10.0) as client:
-                    resp = await client.get(url, params=params)
-                    resp.raise_for_status()
-                    data = resp.json()
-
-                filtered_works = []
-                for w in data.get("results", []):
-                    year = w.get("publication_year")
-                    citations = w.get("cited_by_count", 0)
-
-                    if from_year and (not year or year < from_year):
-                        continue
-                    if citations < min_citations:
-                        continue
-
-                    abstract_index = w.get("abstract_inverted_index")
-                    abstract_text = self.abstract_index_to_text(abstract_index) if abstract_index else ""
-
-                    filtered_works.append({
-                        "id": w["id"],
-                        "title": w.get("title", ""),
-                        "abstract": abstract_text,
-                        "publication_year": year,
-                        "citation_count": citations,
-                    })
+                # Fetch recent filtered works for this referee
+                works = await self.fetch_recent_filtered_works(
+                    author_id=referee_id,
+                    from_year=from_year,
+                    min_citations=min_citations,
+                    max_citations=max_citations,
+                    max_works=max_works_per_referee
+                )
 
                 top_referees.append({
                     "name": referee.get("name"),
@@ -519,7 +543,7 @@ class RefereeMatcher:
                     "institution": referee.get("institution"),
                     "score": 0.0,
                     "is_conflict": self.is_conflict(referee_id),
-                    "works": filtered_works
+                    "works": works
                 })
 
         return top_referees
