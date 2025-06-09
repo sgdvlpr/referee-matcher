@@ -621,15 +621,6 @@ class RefereeMatcher:
 
     def is_conflict(self, candidate_referee_id: str) -> bool:
         return candidate_referee_id in self.CONFLICT_IDS
-  
-    async def get_all_referees_details(self, author_ids: list[str], max_works=200):
-        # Create a list of coroutines for each referee detail request
-        coroutines = [self.get_referee_details(author_id, max_works=max_works) for author_id in author_ids]
-        
-        # Run them concurrently and wait for all to finish
-        all_details = await asyncio.gather(*coroutines)
-        
-        return all_details
 
     def abstract_index_to_text(self, abstract_index: dict) -> str:
         """
