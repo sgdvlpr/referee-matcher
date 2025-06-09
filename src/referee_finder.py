@@ -56,7 +56,6 @@ class RefereeMatcher:
         coauthor_dict = self.get_all_coauthors_concurrently()
         all_ids = {co_id for coauthors in coauthor_dict.values() for co_id in coauthors}
         self.CONFLICT_IDS = list(all_ids)
-        print("self_conflicts", self.CONFLICT_IDS)
 
     async def get_topics_for_subfield(self, field_id: str, subfield_id: str) -> List[Dict]:
         """
@@ -452,10 +451,16 @@ class RefereeMatcher:
 
         return enriched
 
-    async def get_top_referees(self, works: list[dict]) -> list[dict]:
+    async def get_top_referees(
+        self,
+        works: list[dict],
+        from_year: int = None,
+        min_citations: int = 0,
+        max_works_per_referee: int = 20
+    ) -> list[dict]:
         """
-        Extract all unique top referees from a list of works.
-        Each referee includes name, OpenAlex ID, and institution.
+        Extract all unique top referees from a list of works and enrich each with recent filtered works.
+        Each referee includes name, OpenAlex ID, institution, and a list of their recent works.
         Submitting authors are excluded but their co-authors are flagged.
         """
         await self.set_conflict_ids()
@@ -467,19 +472,54 @@ class RefereeMatcher:
             referee = work.get("top_referee", {})
             referee_id = referee.get("id")
 
-            # Exclude if referee is a submitting author or already seen or conflict
             if (
                 referee_id
                 and referee_id not in seen_ids
                 and referee_id not in self.AUTHOR_IDS
             ):
                 seen_ids.add(referee_id)
+
+                # Fetch recent works for referee
+                url = f"{self.base_url}/works"
+                params = {
+                    "filter": f"author.id:{referee_id}",
+                    "sort": "publication_year:desc,cited_by_count:desc",
+                    "per-page": max_works_per_referee
+                }
+
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    resp = await client.get(url, params=params)
+                    resp.raise_for_status()
+                    data = resp.json()
+
+                filtered_works = []
+                for w in data.get("results", []):
+                    year = w.get("publication_year")
+                    citations = w.get("cited_by_count", 0)
+
+                    if from_year and (not year or year < from_year):
+                        continue
+                    if citations < min_citations:
+                        continue
+
+                    abstract_index = w.get("abstract_inverted_index")
+                    abstract_text = self.abstract_index_to_text(abstract_index) if abstract_index else ""
+
+                    filtered_works.append({
+                        "id": w["id"],
+                        "title": w.get("title", ""),
+                        "abstract": abstract_text,
+                        "publication_year": year,
+                        "citation_count": citations,
+                    })
+
                 top_referees.append({
                     "name": referee.get("name"),
                     "id": referee_id,
                     "institution": referee.get("institution"),
                     "score": 0.0,
-                    "is_conflict": self.is_conflict(referee_id)
+                    "is_conflict": self.is_conflict(referee_id),
+                    "works": filtered_works
                 })
 
         return top_referees
@@ -581,38 +621,7 @@ class RefereeMatcher:
 
     def is_conflict(self, candidate_referee_id: str) -> bool:
         return candidate_referee_id in self.CONFLICT_IDS
-
-    async def get_referee_details(self, author_id: str, max_works=20):
-        # Run both requests concurrently
-        author_data, works = await asyncio.gather(
-            self.get_author_details(author_id),
-            self.get_author_works(author_id, max_works=max_works),
-        )
-
-        topics = []
-        for topic in author_data.get("topics", []):
-            tid = topic['id']
-            topics.append({
-                "id": tid,
-                "name": topic["display_name"],
-                "count": topic.get("count", 0)
-            })
-
-        last_known_institutions = author_data.get("last_known_institutions", [])
-        if last_known_institutions:
-            last_known_institution_name = last_known_institutions[0].get("display_name")
-        else:
-            last_known_institution_name = None
-
-        response = {
-            "author_id": author_data["id"],
-            "name": author_data.get("display_name", ""),
-            "summary_stats": author_data.get("summary_stats", {}),
-            "last_known_institution": last_known_institution_name,
-            "works": works,
-        }
-        return response
-    
+  
     async def get_all_referees_details(self, author_ids: list[str], max_works=200):
         # Create a list of coroutines for each referee detail request
         coroutines = [self.get_referee_details(author_id, max_works=max_works) for author_id in author_ids]
@@ -705,16 +714,14 @@ async def main():
         # ... possibly more, but we want just the top 3
     ]
     
-    # all_top_works = await matcher.fetch_all_topic_works(topics_data)
+    all_top_works = await matcher.fetch_all_topic_works(topics_data)
 
-    # sorted_works = await matcher.sort_works_by_relevance(all_top_works, abstract13)
-    # top_refs = await matcher.get_top_referees(sorted_works)
-    # # Save to a file
-    # with open("top_refs.json", "w", encoding="utf-8") as f:
-    #     json.dump(top_refs, f, ensure_ascii=False, indent=2)
-
-    # author_info = await matcher.get_author_details(candidate_author_ids[0])
-    # pprint(author_info, width=100, indent=4)
+    sorted_works = await matcher.sort_works_by_relevance(all_top_works, abstract13)
+    top_refs = await matcher.get_top_referees(sorted_works, from_year=2016)
+    
+    # Save to a file
+    with open("top_refs.json", "w", encoding="utf-8") as f:
+        json.dump(top_refs, f, ensure_ascii=False, indent=2)
 
 # Run main
 asyncio.run(main())

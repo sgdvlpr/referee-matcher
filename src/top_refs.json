@@ -1,0 +1,791 @@
+[
+  {
+    "name": "Giuseppe Carleo",
+    "id": "https://openalex.org/A5007408828",
+    "institution": "ETH Zurich",
+    "score": 0.0,
+    "is_conflict": false,
+    "works": [
+      {
+        "id": "https://openalex.org/W4409294701",
+        "title": "Interaction quenches in Bose gases studied with a time-dependent hypernetted-chain Euler-Lagrange method",
+        "abstract": "We present a new variational method to study the dynamics of a closed bosonic many-body system, the time-dependent hypernetted-chain Euler-Lagrange method, tHNC. Based on the Jastrow ansatz, it accounts for quantum fluctuations in a non-perturbative way. The tHNC method scales well with the number of dimensions, as demonstrated by our results on one-, two-, and three-dimensional systems. We apply the tHNC method to interaction quenches, i.e. sudden changes of the interaction strength, in homogeneous Bose gases. When the quench is strong enough that the final state has roton excitations (as found and predicted for dipolar and Rydberg-dressed Bose-Einstein condensates, respectively), the pair distribution function exhibits stable oscillations. For validation, we compare tHNC results with time-dependent variational Monte Carlo results in one and two dimensions.",
+        "publication_year": 2025,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4408867128",
+        "title": "Unusual Energy Spectra of Matrix Product States",
+        "abstract": "In approximate ground states obtained from imaginary-time evolution, the spectrum of the state-its decomposition into exact energy eigenstates-falls off exponentially with the energy. Here we consider the energy spectra of approximate matrix product ground states, such as those obtained with the density matrix renormalization group. Despite the high accuracy of these states, contributions to the spectra are roughly constant out to surprisingly high energy, with an increase in the bond dimension reducing the amplitude but not the extent of these high-energy tails. The unusual spectra appear to be a general feature of compressed wavefunctions, independent of boundary or dimensionality, and are also observed in neural network wavefunctions. The unusual spectra can have a strong effect on sampling-based methods, yielding large fluctuations. The energy variance, which can be used to extrapolate observables to eliminate truncation error, is subject to these large fluctuations when sampled. Nevertheless, we devise a sampling-based variance approach which gives excellent and efficient extrapolations.",
+        "publication_year": 2025,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4407769340",
+        "title": "Correcting and extending Trotterized quantum many-body dynamics",
+        "abstract": "A complex but important challenge in understanding quantum mechanical phenomena is the simulation of quantum many-body dynamics. Although quantum computers offer significant potential to accelerate these simulations, their practical application is currently limited by noise and restricted scalability. In this work, we address these problems by proposing a hybrid ansatz combining the strengths of quantum and classical computational methods. Using Trotterization, we evolve an initial state on the quantum computer according to a simplified Hamiltonian, focusing on terms that are difficult to simulate classically. A classical model then corrects the simulation by including the terms omitted in the quantum circuit. While the classical ansatz is optimized during the time evolution, the quantum circuit has no variational parameters. Derivatives can thus be calculated purely classically, avoiding challenges arising in the optimization of parameterized quantum circuits. We demonstrate three applications of this hybrid method. First, our approach allows us to avoid SWAP gates in the quantum circuit by restricting the quantum part of the ansatz to hardware-efficient terms of the Hamiltonian. Second, we can mitigate errors arising from the Trotterization of the time evolution unitary. Finally, we can extend the system size while keeping the number of qubits on the quantum device constant by including additional degrees of freedom in the classical ansatz.",
+        "publication_year": 2025,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4407698411",
+        "title": "Comment on “Can Neural Quantum States Learn Volume-Law Ground States?”",
+        "abstract": "",
+        "publication_year": 2025,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4407632201",
+        "title": "Non-stabilizerness of Neural Quantum States",
+        "abstract": "We introduce a methodology to estimate non-stabilizerness or \"magic\", a key resource for quantum complexity, with Neural Quantum States (NQS). Our framework relies on two schemes based on Monte Carlo sampling to quantify non-stabilizerness via Stabilizer R\\'enyi Entropy (SRE) in arbitrary variational wave functions. When combined with NQS, this approach is effective for systems with strong correlations and in dimensions larger than one, unlike Tensor Network methods. Firstly, we study the magic content in an ensemble of random NQS, demonstrating that neural network parametrizations of the wave function capture finite non-stabilizerness besides large entanglement. Secondly, we investigate the non-stabilizerness in the ground state of the $J_1$-$J_2$ Heisenberg model. In 1D, we find that the SRE vanishes at the Majumdar-Ghosh point $J_2 = J_1/2$, consistent with a stabilizer ground state. In 2D, a dip in the SRE is observed near maximum frustration around $J_2/J_1 \\approx 0.6$, suggesting a Valence Bond Solid between the two antiferromagnetic phases.",
+        "publication_year": 2025,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4407590337",
+        "title": "Foundation Neural-Network Quantum States",
+        "abstract": "Foundation models are highly versatile neural-network architectures capable of processing different data types, such as text and images, and generalizing across various tasks like classification and generation. Inspired by this success, we propose Foundation Neural-Network Quantum States (FNQS) as an integrated paradigm for studying quantum many-body systems. FNQS leverage key principles of foundation models to define variational wave functions based on a single, versatile architecture that processes multimodal inputs, including spin configurations and Hamiltonian physical couplings. Unlike specialized architectures tailored for individual Hamiltonians, FNQS can generalize to physical Hamiltonians beyond those encountered during training, offering a unified framework adaptable to various quantum systems and tasks. FNQS enable the efficient estimation of quantities that are traditionally challenging or computationally intensive to calculate using conventional methods, particularly disorder-averaged observables. Furthermore, the fidelity susceptibility can be easily obtained to uncover quantum phase transitions without prior knowledge of order parameters. These pretrained models can be efficiently fine-tuned for specific quantum systems. The architectures trained in this paper are publicly available at https://huggingface.co/nqs-models, along with examples for implementing these neural networks in NetKet.",
+        "publication_year": 2025,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4406938694",
+        "title": "Spectroscopy of two-dimensional interacting lattice electrons using symmetry-aware neural backflow transformations",
+        "abstract": "Neural networks have shown to be a powerful tool to represent the ground state of quantum many-body systems, including fermionic systems. However, efficiently integrating lattice symmetries into neural representations remains a significant challenge. In this work, we introduce a framework for embedding lattice symmetries in fermionic wavefunctions and demonstrate its ability to target both ground states and low-lying excitations. Using group-equivariant neural backflow transformations, we study the t-V model on a square lattice away from half-filling. Our symmetry-aware backflow significantly improves ground-state energies and yields accurate low-energy excitations for lattices up to 10 × 10. We also compute accurate two-point density-correlation functions and the structure factor to identify phase transitions and critical points. These findings introduce a symmetry-aware framework important for studying quantum materials and phase transitions. In this manuscript, the authors introduce a method for numerically modelling fermionic systems using a neural network wavefunction ansatz. They demonstrate that this method can efficiently and accurately find ground and low-lying excited states in two-dimensional models, outperforming existing approaches.",
+        "publication_year": 2025,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4405465969",
+        "title": "Time-dependent Neural Galerkin Method for Quantum Dynamics",
+        "abstract": "We introduce a classical computational method for quantum dynamics that relies on a global-in-time variational principle. Unlike conventional time-stepping approaches, our scheme computes the entire state trajectory over a finite time window by minimizing a physically motivated loss function that enforces the Schr\\\"odinger's equation. The variational state is parametrized with a Galerkin-inspired ansatz based on a time-dependent linear combination of time-independent Neural Quantum States. This structure effectively captures the relevant dynamical frequencies in the time evolution and is particularly well-suited for exploring long-time dynamics. We showcase the method's effectiveness by simulating global quantum quenches in the paradigmatic Transverse-Field Ising model in both 1D and 2D. By extracting the asymptotic long-time evolution, we uncover signatures of ergodicity breaking and absence of thermalization in two dimensions. Overall, the method presented here shows competitive performance compared to state-of-the-art time-dependent variational approaches and highlight the potential to explore previously inaccessible dynamical regimes of strongly interacting quantum systems.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4405252957",
+        "title": "Phase diagram and crystal melting of helium-4 in two dimensions",
+        "abstract": "We study the zero-temperature phase diagram of two-dimensional helium-4 using neural quantum states. Our variational description allows us to address liquid and solid phases using the same functional form as well as exploring possible melting scenarios, for instance via an intermediate hexatic phase. Notably, this is achieved by performing fixed pressure variational Monte Carlo calculations. Within the isobaric ensemble framework, we are able to clearly identify the first-order liquid-solid phase transition. However, in an intermediate region of nearly constant pressure, we find that simulations of $N=30$ atoms continuously transition from liquid to solid, with signatures of a hexatic order coexisting with a small condensate fraction. Calculations for larger systems follow the metastable liquid and solid branches in this transient region. We additionally compute the R\\'enyi-2 entanglement entropy across the liquid-solid phase transition and find a sharp decrease upon freezing.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4403906907",
+        "title": "Ab-initio variational wave functions for the time-dependent many-electron Schrödinger equation",
+        "abstract": "Understanding the real-time evolution of many-electron quantum systems is essential for studying dynamical properties in condensed matter, quantum chemistry, and complex materials, yet it poses a significant theoretical and computational challenge. Our work introduces a variational approach for fermionic time-dependent wave functions, surpassing mean-field approximations by accurately capturing many-body correlations. We employ time-dependent Jastrow factors and backflow transformations, enhanced through neural networks parameterizations. To compute the optimal time-dependent parameters, we employ the time-dependent variational Monte Carlo technique and introduce a new method based on Taylor-root expansions of the propagator, enhancing the accuracy of our simulations. The approach is demonstrated in three distinct systems. In all cases, we show clear signatures of many-body correlations in the dynamics. The results showcase the ability of our variational approach to accurately describe the time evolution, providing insight into quantum dynamical effects in interacting electronic systems, beyond the capabilities of mean-field.",
+        "publication_year": 2024,
+        "citation_count": 3
+      },
+      {
+        "id": "https://openalex.org/W4403511026",
+        "title": "Variational benchmarks for quantum many-body problems",
+        "abstract": "The continued development of computational approaches to many-body ground-state problems in physics and chemistry calls for a consistent way to assess its overall progress. In this work, we introduce a metric of variational accuracy, the V-score, obtained from the variational energy and its variance. We provide an extensive curated dataset of variational calculations of many-body quantum systems, identifying cases where state-of-the-art numerical approaches show limited accuracy and future algorithms or computational platforms, such as quantum computing, could provide improved accuracy. The V-score can be used as a metric to assess the progress of quantum variational methods toward a quantum advantage for ground-state problems, especially in regimes where classical verifiability is impossible.",
+        "publication_year": 2024,
+        "citation_count": 20
+      },
+      {
+        "id": "https://openalex.org/W4403623478",
+        "title": "Simulating continuous-space systems with quantum-classical wave\n  functions",
+        "abstract": "Most non-relativistic interacting quantum many-body systems, such as atomic and molecular ensembles or materials, are naturally described in terms of continuous-space Hamiltonians. The simulation of their ground-state properties on digital quantum computers is challenging because current algorithms require discretization, which usually amounts to choosing a finite basis set, inevitably introducing errors. In this work, we propose an alternative, discretization-free approach that combines classical and quantum resources in a global variational ansatz, optimized using the framework of variational Monte Carlo. We introduce both purely quantum as well as hybrid quantum-classical ansatze and benchmark them on three paradigmatic continuous-space systems that are either very challenging or beyond the reach of current quantum approaches: the one-dimensional quantum rotor model, a system of Helium-3 particles in one and two dimensions, and the two-dimensional homogeneous electron gas. We embed relevant constraints such as the antisymmetry of fermionic wave functions directly into the ansatz. Many-body correlations are introduced via backflow transformations represented by parameterized quantum circuits. We demonstrate that the accuracy of the simulation can be systematically improved by increasing the number of circuit parameters and study the effects of shot noise. Furthermore, we show that the hybrid ansatz improves the ground-state energies obtained using the purely classical wave function.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4402701491",
+        "title": "Unusual energy spectra of matrix product states",
+        "abstract": "In the simulation of ground states of strongly-correlated quantum systems, the decomposition of an approximate solution into the exact eigenstates of the Hamiltonian -- the energy spectrum of the state -- determines crucial aspects of the simulation's performance. For example, in approaches based on imaginary-time evolution, the spectrum falls off exponentially with the energy, ensuring rapid convergence. Here we consider the energy spectra of approximate matrix product state ground states, such as those obtained with the density matrix renormalization group. Despite the high accuracy of these states, contributions to the spectra are roughly constant out to surprisingly high energy, with an increase in bond dimension reducing the amplitude but not the extent of these high-energy tails. The unusual spectra, which appear to be a general feature of compressed wavefunctions, have a strong effect on sampling-based methods, yielding large fluctuations. For example, estimating the energy variance using sampling performs much more poorly than one might expect. Bounding the most extreme samples makes the variance estimate much less noisy but introduces a strong bias. However, we find that this biased variance estimator is an excellent surrogate for the variance when extrapolating the ground-state energy, and this approach outperforms competing extrapolation methods in both accuracy and computational cost.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4400484068",
+        "title": "Unveiling nonmagnetic phase and many-body entanglement in\n  two-dimensional random quantum magnets Sr$_2$CuTe$_{1-x}$W$_x$O$_6$",
+        "abstract": "We apply a random-plaquette $J_1$-$J_2$ model on the square lattice to capture the physics of a series of spin-$1/2$ Heisenberg antiferromagnet compounds Sr$_2$CuTe$_{1-x}$W$_x$O$_6$. With the input of experimentally relevant coupling strengths, our exact diagonalization (ED) study probes the ground state properties beyond previous linear spin-wave approach. An intermediate range of $x \\in [0.08, 0.55]$ is identified for a nonmagnetic phase without the long-range N\\'eel or stripe order. The absence of both valence-bond-glass order and spin-glass non-ergodic dynamics renders its nature intriguing. Deep inside this phase around $x = 0.3$, we observe signatures potentially linked to randomness-induced short-range spin-liquid-like (SLL) states, including close to zero spin-freezing parameter, vanishing spin-spin correlation beyond nearest neighbors, almost uniform static spin structure factor, as well as a broad tail in the dynamical spin structure factor. The nonmagnetic phase also features multipartite entanglement in the ground state witnessed by quantum Fisher information (QFI), which exhibits universal scaling behaviors at quantum critical points.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4400240323",
+        "title": "Message-passing neural quantum states for the homogeneous electron gas",
+        "abstract": "",
+        "publication_year": 2024,
+        "citation_count": 20
+      },
+      {
+        "id": "https://openalex.org/W4400221716",
+        "title": "Predicting Topological Entanglement Entropy in a Rydberg analog\n  simulator",
+        "abstract": "Predicting the dynamical properties of topological matter is a challenging task, not only in theoretical and experimental settings, but also numerically. This work proposes a variational approach based on a time-dependent correlated Ansatz, focusing on the dynamical preparation of a quantum-spin-liquid state on a Rydberg-atom simulator. Within this framework, we are able to faithfully represent the state of the system throughout the entire dynamical preparation protocol. The flexibility of our approach does not only allow one to match the physically correct form of the Rydberg-atom Hamiltonian but also the relevant lattice topology. This is unlike previous numerical studies which were constrained to simplified versions of the problem through the modification of both the Hamiltonian and the lattice. Our approach further gives access to global quantities such as the topological entanglement entropy ($\\gamma$), providing insight into the topological properties of the system. This is achieved by the introduction of the time-dependent variational Monte Carlo (t-VMC) technique to the dynamics of topologically ordered phases. Upon employing a Jastrow variational Ansatz with a scalable number of parameters, we are able to efficiently extend our simulations to system sizes matching state-of-the-art experiments and beyond. Our results corroborate experimental observations, confirming the presence of topological order during the dynamical state-preparation protocol, and additionally deepen our understanding of topological entanglement dynamics. We show that, while the simulated state exhibits (global) topological order and local properties resembling those of a resonating-valence-bond (RVB) state, it lacks the latter's characteristic topological entanglement entropy signature $\\gamma = \\ln(2)$, irrespective of the degree of adiabaticity of the protocol.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4399695607",
+        "title": "Spectroscopy of two-dimensional interacting lattice electrons using\n  symmetry-aware neural backflow transformations",
+        "abstract": "Neural networks have shown to be a powerful tool to represent ground state of quantum many-body systems, including for fermionic systems. In this work, we introduce a framework for embedding lattice symmetries in Neural Slater-Backflow-Jastrow wavefunction ansatzes, and demonstrate how our model allows us to target the ground state and low-lying excited states. To capture the Hamiltonian symmetries, we introduce group-equivariant backflow transformations. We study the low-energy excitation spectrum of the t-V model on a square lattice away from half-filling, and find that our symmetry-aware backflow significantly improves the ground-state energies, and yields accurate low-lying excited states for up to 10x10 lattices. We additionally compute the two-point density-correlation function and the structure factor to detect the phase transition and determine the critical point. Finally, we quantify the variational accuracy of our model using the V-score.",
+        "publication_year": 2024,
+        "citation_count": 2
+      },
+      {
+        "id": "https://openalex.org/W4399492909",
+        "title": "Real-time quantum dynamics of thermal states with neural thermofields",
+        "abstract": "Solving the time-dependent quantum many-body Schrquotodinger equation is a challenging task, especially for states at a finite temperature, where the environment affects the dynamics. Most existing approximating methods are designed to represent static thermal density matrices, 1D systems, and/or zero-temperature states. Here, the authors propose a method to study the real-time dynamics of thermal states in two dimensions, based on thermofield dynamics, variational Monte Carlo, and neural-network quantum states.",
+        "publication_year": 2024,
+        "citation_count": 5
+      },
+      {
+        "id": "https://openalex.org/W4399556315",
+        "title": "Sparse Autoregressive Neural Networks for Classical Spin Systems",
+        "abstract": "Abstract Efficient sampling and approximation of Boltzmann distributions involving large sets of binary variables, or spins, are pivotal in diverse scientific fields even beyond physics. Recent advances in generative neural networks have significantly impacted this domain. However, these neural networks are often treated as black boxes, with architectures primarily influenced by data-driven problems in computational science. Addressing this gap, we introduce a novel autoregressive neural network architecture named TwoBo, specifically designed for sparse two-body interacting spin systems. We directly incorporate the Boltzmann distribution into its architecture and parameters, resulting in enhanced convergence speed, superior free energy accuracy, and reduced trainable parameters. We perform numerical experiments on disordered, frustrated systems with more than 1000 spins on grids and random graphs, and demonstrate its advantages compared to previous autoregressive and recurrent architectures. Our findings validate a physically informed approach and suggest potential extensions to multivalued variables and many-body interaction systems, paving the way for broader applications in scientific research.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4398234743",
+        "title": "Empirical Sample Complexity of Neural Network Mixed State Reconstruction",
+        "abstract": "Quantum state reconstruction using Neural Quantum States has been proposed as a viable tool to reduce quantum shot complexity in practical applications, and its advantage over competing techniques has been shown in numerical experiments focusing mainly on the noiseless case. In this work, we numerically investigate the performance of different quantum state reconstruction techniques for mixed states: the finite-temperature Ising model. We show how to systematically reduce the quantum resource requirement of the algorithms by applying variance reduction techniques. Then, we compare the two leading neural quantum state encodings of the state, namely, the Neural Density Operator and the positive operator-valued measurement representation, and illustrate their different performance as the mixedness of the target state varies. We find that certain encodings are more efficient in different regimes of mixedness and point out the need for designing more efficient encodings in terms of both classical and quantum resources.",
+        "publication_year": 2024,
+        "citation_count": 5
+      }
+    ]
+  },
+  {
+    "name": "Dmitry A. Abanin",
+    "id": "https://openalex.org/A5018660847",
+    "institution": "University of Geneva",
+    "score": 0.0,
+    "is_conflict": false,
+    "works": [
+      {
+        "id": "https://openalex.org/W4411021762",
+        "title": "Visualizing dynamics of charges and strings in (2 + 1)D lattice gauge theories",
+        "abstract": "",
+        "publication_year": 2025,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4409014094",
+        "title": "Quasiparticle Cooling Algorithms for Quantum Many-Body State Preparation",
+        "abstract": "Probing correlated states of many-body systems is one of the central tasks for quantum simulators and processors. A promising approach to state preparation is to realize desired correlated states as steady states of engineered dissipative evolution. A recent experiment with a Google superconducting quantum processor [X. Mi , Science 383, 1332 (2024)] demonstrated a cooling algorithm utilizing auxiliary degrees of freedom that are periodically reset to remove quasiparticles from the system, thereby driving it towards its ground state. In this work, we develop a kinetic-theory framework to describe quasiparticle cooling dynamics, and employ it to compare the efficiency of different cooling algorithms. In particular, we introduce a protocol where coupling to auxiliaries is modulated in time to minimize heating processes, and demonstrate that it allows a high-fidelity preparation of ground states in different quantum phases. We verify the validity of the kinetic-theory description by an extensive comparison with numerical simulations for the examples of a one-dimensional transverse-field Ising model, the transverse-field Ising model with an additional integrability-breaking field, and a nonintegrable antiferromagnetic Heisenberg spin ladder. In all cases, we are able to efficiently cool into the many-body ground state. The effects of noise, which limits efficiency of variational quantum algorithms in near-term quantum processors, are investigated through the lens of the kinetic theory: we show how the steady-state quasiparticle populations depend on the noise rate, and we establish maximum noise values for achieving high-fidelity ground states. This work establishes quasiparticle cooling algorithms as a practical, robust method for many-body state preparation on near-term quantum processors. Published by the American Physical Society 2025",
+        "publication_year": 2025,
+        "citation_count": 1
+      },
+      {
+        "id": "https://openalex.org/W4407085868",
+        "title": "Theory of Robust Quantum Many-Body Scars in Long-Range Interacting Systems",
+        "abstract": "Quantum many-body scars (QMBS) are exceptional energy eigenstates of quantum many-body systems associated with violations of thermalization for special nonequilibrium initial states. Their various systematic constructions require fine-tuning of local Hamiltonian parameters. In this work, we demonstrate that long-range interacting quantum spin systems generically host robust QMBS. We analyze spectral properties upon raising the power-law decay exponent <a:math xmlns:a=\"http://www.w3.org/1998/Math/MathML\" display=\"inline\"><a:mi>α</a:mi></a:math> of spin-spin interactions from the solvable permutationally symmetric limit <c:math xmlns:c=\"http://www.w3.org/1998/Math/MathML\" display=\"inline\"><c:mi>α</c:mi><c:mo>=</c:mo><c:mn>0</c:mn></c:math>. First, we numerically establish that, despite the fact that spectral signatures of chaos appear for infinitesimal <e:math xmlns:e=\"http://www.w3.org/1998/Math/MathML\" display=\"inline\"><e:mi>α</e:mi></e:math>, the towers of <g:math xmlns:g=\"http://www.w3.org/1998/Math/MathML\" display=\"inline\"><g:mi>α</g:mi><g:mo>=</g:mo><g:mn>0</g:mn></g:math> energy eigenstates with large collective spin are smoothly deformed as <i:math xmlns:i=\"http://www.w3.org/1998/Math/MathML\" display=\"inline\"><i:mi>α</i:mi></i:math> is increased and exhibit characteristic QMBS features. To elucidate the nature and fate of these states in larger systems, we introduce an analytical approach based on mapping the spin Hamiltonian onto a relativistic quantum rotor nonlinearly coupled to an extensive set of bosonic modes. We analytically solve for the eigenstates of this interacting impurity model by means of a novel polaron-type canonical transformation and show their self-consistent localization in large-spin sectors of the original Hamiltonian for <k:math xmlns:k=\"http://www.w3.org/1998/Math/MathML\" display=\"inline\"><k:mn>0</k:mn><k:mo>&lt;</k:mo><k:mi>α</k:mi><k:mo>&lt;</k:mo><k:mi>d</k:mi></k:math> (with <m:math xmlns:m=\"http://www.w3.org/1998/Math/MathML\" display=\"inline\"><m:mi>d</m:mi><m:mo>=</m:mo><m:mtext>spatial dimension of the lattice</m:mtext></m:math>). Our theory unveils the stability mechanism of such QMBS for an arbitrary system size and predicts instances of its breakdown, e.g., near dynamical critical points or in the presence of semiclassical chaos, which we verify numerically in long-range quantum Ising chains. As a by-product, we find a predictive criterion for the presence or absence of heating under periodic driving for <o:math xmlns:o=\"http://www.w3.org/1998/Math/MathML\" display=\"inline\"><o:mn>0</o:mn><o:mo>&lt;</o:mo><o:mi>α</o:mi><o:mo>&lt;</o:mo><o:mi>d</o:mi></o:math>, beyond existing Floquet-prethermalization theorems. Published by the American Physical Society 2025",
+        "publication_year": 2025,
+        "citation_count": 2
+      },
+      {
+        "id": "https://openalex.org/W4407123214",
+        "title": "Semi-group influence matrices for non-equilibrium quantum impurity\n  models",
+        "abstract": "We introduce a framework for describing the real-time dynamics of quantum impurity models out of equilibrium which is based on the influence matrix approach. By replacing the dynamical map of a large fermionic quantum environment with an effective semi-group influence matrix (SGIM) which acts on a reduced auxiliary space, we overcome the limitations of previous proposals, achieving high accuracy at long evolution times. This SGIM corresponds to a uniform matrix-product state representation of the influence matrix and can be obtained by an efficient algorithm presented in this paper. We benchmark this approach by computing the spectral function of the single impurity Anderson model with high resolution. Further, the spectrum of the effective dynamical map allows us to obtain relaxation rates of the impurity towards equilibrium following a quantum quench. Finally, for a quantum impurity model with on-site two-fermion loss, we compute the spectral function and confirm the emergence of Kondo physics at large loss rates.",
+        "publication_year": 2025,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4405183524",
+        "title": "Quantum error correction below the surface code threshold",
+        "abstract": "",
+        "publication_year": 2024,
+        "citation_count": 49
+      },
+      {
+        "id": "https://openalex.org/W4404755652",
+        "title": "Quantum scars make their mark in graphene",
+        "abstract": "",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4403244104",
+        "title": "Phase transitions in random circuit sampling",
+        "abstract": "Undesired coupling to the surrounding environment destroys long-range correlations in quantum processors and hinders coherent evolution in the nominally available computational space. This noise is an outstanding challenge when leveraging the computation power of near-term quantum processors",
+        "publication_year": 2024,
+        "citation_count": 30
+      },
+      {
+        "id": "https://openalex.org/W4403345252",
+        "title": "Observation of disorder-free localization and efficient disorder\n  averaging on a quantum processor",
+        "abstract": "One of the most challenging problems in the computational study of localization in quantum manybody systems is to capture the effects of rare events, which requires sampling over exponentially many disorder realizations. We implement an efficient procedure on a quantum processor, leveraging quantum parallelism, to efficiently sample over all disorder realizations. We observe localization without disorder in quantum many-body dynamics in one and two dimensions: perturbations do not diffuse even though both the generator of evolution and the initial states are fully translationally invariant. The disorder strength as well as its density can be readily tuned using the initial state. Furthermore, we demonstrate the versatility of our platform by measuring Renyi entropies. Our method could also be extended to higher moments of the physical observables and disorder learning.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4403800291",
+        "title": "Visualizing Dynamics of Charges and Strings in (2+1)D Lattice Gauge\n  Theories",
+        "abstract": "Lattice gauge theories (LGTs) can be employed to understand a wide range of phenomena, from elementary particle scattering in high-energy physics to effective descriptions of many-body interactions in materials. Studying dynamical properties of emergent phases can be challenging as it requires solving many-body problems that are generally beyond perturbative limits. We investigate the dynamics of local excitations in a $\\mathbb{Z}_2$ LGT using a two-dimensional lattice of superconducting qubits. We first construct a simple variational circuit which prepares low-energy states that have a large overlap with the ground state; then we create particles with local gates and simulate their quantum dynamics via a discretized time evolution. As the effective magnetic field is increased, our measurements show signatures of transitioning from deconfined to confined dynamics. For confined excitations, the magnetic field induces a tension in the string connecting them. Our method allows us to experimentally image string dynamics in a (2+1)D LGT from which we uncover two distinct regimes inside the confining phase: for weak confinement the string fluctuates strongly in the transverse direction, while for strong confinement transverse fluctuations are effectively frozen. In addition, we demonstrate a resonance condition at which dynamical string breaking is facilitated. Our LGT implementation on a quantum processor presents a novel set of techniques for investigating emergent particle and string dynamics.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4403662137",
+        "title": "Efficient Pseudomode Representation and Complexity of Quantum Impurity\n  Models",
+        "abstract": "Out-of-equilibrium fermionic quantum impurity models (QIM), describing a small interacting system coupled to a continuous fermionic bath, play an important role in condensed matter physics. Solving such models is a computationally demanding task, and a variety of computational approaches are based on finding approximate representations of the bath by a finite number of modes. In this paper, we formulate the problem of finding efficient bath representations as that of approximating a kernel of the bath's Feynman-Vernon influence functional by a sum of complex exponentials, with each term defining a fermionic pseudomode. Under mild assumptions on the analytic properties of the bath spectral density, we provide an analytic construction of pseudomodes, and prove that their number scales polylogarithmically with the maximum evolution time $T$ and the approximation error $\\varepsilon$. We then demonstrate that the number of pseudomodes can be significantly reduced by an interpolative matrix decomposition (ID). Furthermore, we present a complementary approach, based on constructing rational approximations of the bath's spectral density using the ``AAA'' algorithm, followed by compression with ID. The combination of two approaches yields a pseudomode count scaling as $N_\\text{ID} \\sim \\log(T)\\log(1/\\varepsilon)$, and the agreement between the two approches suggests that the result is close to optimal. Finally, to relate our findings to QIM, we derive an explicit Liouvillian that describes the time evolution of the combined impurity-pseudomodes system. These results establish bounds on the computational resources required for solving out-of-equilibrium QIMs, providing an efficient starting point for tensor-network methods for QIMs.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4401362249",
+        "title": "Corrections to Diffusion in Interacting Quantum Systems",
+        "abstract": "The approach to equilibrium in interacting classical and quantum systems is a challenging problem of both theoretical and experimental interest. One useful organizing principle characterizing equilibration is the dissipative universality class, the most prevalent one being diffusion. In this paper, we use the effective field theory (EFT) of diffusion to systematically obtain universal power-law corrections to diffusion. We then employ large-scale simulations of classical and quantum systems to explore their validity. In particular, we find universal scaling functions for the corrections to the dynamical structure factor <a:math xmlns:a=\"http://www.w3.org/1998/Math/MathML\" display=\"inline\"><a:mo stretchy=\"false\">⟨</a:mo><a:mi>n</a:mi><a:mo stretchy=\"false\">(</a:mo><a:mi>x</a:mi><a:mo>,</a:mo><a:mi>t</a:mi><a:mo stretchy=\"false\">)</a:mo><a:mi>n</a:mi><a:mo stretchy=\"false\">⟩</a:mo></a:math>, in the presence of a single <g:math xmlns:g=\"http://www.w3.org/1998/Math/MathML\" display=\"inline\"><g:mi mathvariant=\"normal\">U</g:mi><g:mo stretchy=\"false\">(</g:mo><g:mn>1</g:mn><g:mo stretchy=\"false\">)</g:mo></g:math> or <l:math xmlns:l=\"http://www.w3.org/1998/Math/MathML\" display=\"inline\"><l:mi mathvariant=\"normal\">SU</l:mi><l:mo stretchy=\"false\">(</l:mo><l:mn>2</l:mn><l:mo stretchy=\"false\">)</l:mo></l:math> charge in systems with and without particle-hole symmetry, and present the framework to generalize the calculation to multiple charges. Classical simulations show remarkable agreement with EFT predictions for subleading corrections, pushing precision tests of effective theories for thermalizing systems to an unprecedented level. Moving to quantum systems, we perform large-scale tensor-network simulations in unitary and noisy 1D Floquet systems with conserved magnetization. We find a qualitative agreement with EFT, which becomes quantitative in the case of noisy systems. Additionally, we show how the knowledge of EFT corrections allows for fitting methods, which can improve the estimation of transport parameters at the intermediate times accessible by simulations and experiments. Finally, we explore nonlinear response in quantum systems and find that EFT provides an accurate prediction for its behavior. Our results provide a basis for a better understanding of the nonlinear phenomena present in thermalizing systems. Published by the American Physical Society 2024",
+        "publication_year": 2024,
+        "citation_count": 4
+      },
+      {
+        "id": "https://openalex.org/W4400104939",
+        "title": "Scalable tomography of many-body quantum environments with low temporal\n  entanglement",
+        "abstract": "Describing dynamics of a quantum system coupled to a complex many-body environment is a ubiquitous problem in quantum science. General non-Markovian environments are characterized by their influence matrix~(IM) -- a multi-time tensor arising from repeated interactions between the system and environment. While complexity of the most generic IM grows exponentially with the evolution time, recent works argued that for many instances of physical many-body environments, the IM is significantly less complex. This is thanks to area-law scaling of temporal entanglement, which quantifies the correlations between the past and the future states of the system. However, efficient classical algorithms for computing IM are only available for non-interacting environments or certain interacting 1D environments. Here, we study a learning algorithm for reconstructing IMs of large many-body environments simulated on a quantum processor. This hybrid algorithm involves experimentally collecting quantum measurement results of auxiliary qubits which are repeatedly coupled to the many-body environment, followed by a classical machine-learning construction of a matrix-product (MPS) representation of the IM. Using the example of 1D spin-chain environments, with a classically generated training dataset, we demonstrate that the algorithm allows scalable reconstruction of IMs for long evolution times. The reconstructed IM can be used to efficiently model quantum transport through an impurity, including cases with multiple leads and time-dependent controls. These results indicate the feasibility of characterizing long-time dynamics of complex environments using a limited number of measurements, under the assumption of a moderate temporal entanglement.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4396781124",
+        "title": "Bound on approximating non-Markovian dynamics by tensor networks in the time domain",
+        "abstract": "The spin-boson (SB) model plays a central role in studies of dissipative quantum dynamics, due to bothits conceptual importance and relevance to a number of physical systems. Here, we provide rigorous bounds of the computational complexity of the SB model for the physically relevant case of a zero temperature ohmic bath. We start with the description of the bosonic bath via its Feynman-Vernon influence functional (IF), which is a tensor on the space of the trajectory of an impurity spin. By expanding the kernel of the IF via a sum of decaying exponentials, we obtain an analytical approximation of the continuous bath by a finite number of damped bosonic modes. We bound the error induced by restricting bosonic Hilbert spaces to a finite-dimensional subspace with small boson numbers, which yields an analytical form of a matrix-product state (MPS) representation of the IF. We show that the MPS bond dimension D scales polynomially in the error on physical observables as well as in the evolution time T, $D\\ensuremath{\\propto}{T}^{4}/{\\ensuremath{\\epsilon}}^{2}$. This bound indicates that the SB model can be efficiently simulated using a polynomial in time-computational resources.",
+        "publication_year": 2024,
+        "citation_count": 6
+      },
+      {
+        "id": "https://openalex.org/W4394971468",
+        "title": "Quasiparticle cooling algorithms for quantum many-body state preparation",
+        "abstract": "Probing correlated states of many-body systems is one of the central tasks for quantum simulators and processors. A promising approach to state preparation is to realize desired correlated states as steady states of engineered dissipative evolution. A recent experiment with a Google superconducting quantum processor [X. Mi et al., Science 383, 1332 (2024)] demonstrated a cooling algorithm utilizing auxiliary degrees of freedom that are periodically reset to remove quasiparticles from the system, thereby driving it towards the ground state. We develop a kinetic theory framework to describe quasiparticle cooling dynamics, and employ it to compare the efficiency of different cooling algorithms. In particular, we introduce a protocol where coupling to auxiliaries is modulated in time to minimize heating processes, and demonstrate that it allows a high-fidelity preparation of ground states in different quantum phases. We verify the validity of the kinetic theory description by an extensive comparison with numerical simulations of a 1d transverse-field Ising model using a solvable model and tensor-network techniques. Further, the effect of noise, which limits efficiency of variational quantum algorithms in near-term quantum processors, can be naturally described within the kinetic theory. We investigate the steady state quasiparticle population as a function of noise strength, and establish maximum noise values for achieving high-fidelity ground states. This work establishes quasiparticle cooling algorithms as a practical, robust method for many-body state preparation on near-term quantum processors.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4393951973",
+        "title": "Dynamics of magnetization at infinite temperature in a Heisenberg spin chain",
+        "abstract": "Understanding universal aspects of quantum dynamics is an unresolved problem in statistical mechanics. In particular, the spin dynamics of the one-dimensional Heisenberg model were conjectured as to belong to the Kardar-Parisi-Zhang (KPZ) universality class based on the scaling of the infinite-temperature spin-spin correlation function. In a chain of 46 superconducting qubits, we studied the probability distribution of the magnetization transferred across the chain's center, [Formula: see text]. The first two moments of [Formula: see text] show superdiffusive behavior, a hallmark of KPZ universality. However, the third and fourth moments ruled out the KPZ conjecture and allow for evaluating other theories. Our results highlight the importance of studying higher moments in determining dynamic universality classes and provide insights into universal behavior in quantum systems.",
+        "publication_year": 2024,
+        "citation_count": 39
+      },
+      {
+        "id": "https://openalex.org/W4392380436",
+        "title": "Finite-size subthermal regime in disordered <mml:math xmlns:mml=\"http://www.w3.org/1998/Math/MathML\"><mml:mrow><mml:mi>SU</mml:mi><mml:mo>(</mml:mo><mml:mi>N</mml:mi><mml:mo>)</mml:mo></mml:mrow></mml:math> -symmetric Heisenberg chains",
+        "abstract": "$\\mathrm{SU}(N)$ symmetry is incompatible with the many-body localized (MBL) phase, even when strong disorder is present. However, recent studies have shown that finite-size $\\mathrm{SU}(2)$ systems exhibit nonergodic, subthermal behavior, characterized by the breakdown of the eigenstate thermalization hypothesis, and by the excited eigenstates entanglement entropy that is intermediate between area and volume law. In this paper, we extend previous studies of the $\\mathrm{SU}(2)$-symmetric disordered Heisenberg model to larger systems, using the time-dependent density matrix renormalization group (tDMRG) method. We simulate quench dynamics from weakly entangled initial states up to long times, finding robust subthermal behavior at stronger disorder. Although we find an increased tendency towards thermalization at larger system sizes, the subthermal regime persists at intermediate time scales, nevertheless, and therefore should be accessible experimentally. At weaker disorder, we observe signatures of thermalization; however, entanglement entropy exhibits slow sublinear growth, in contrast to conventional thermalizing systems. Furthermore, we study dynamics of the $\\mathrm{SU}(3)$-symmetric disordered Heisenberg model. Similarly, strong disorder drives the system into subthermal regime, albeit thermalizing phase is broader compared to the $\\mathrm{SU}(2)$ case. Our findings demonstrate the robustness of the subthermal regime in spin chains with non-Abelian continuous symmetry, and are consistent with eventual thermalization at large system sizes and long time scales, suggested by previous studies.",
+        "publication_year": 2024,
+        "citation_count": 2
+      },
+      {
+        "id": "https://openalex.org/W4385237310",
+        "title": "Equilibrium quantum impurity problems via matrix product state encoding of the retarded action",
+        "abstract": "In the $0+1$ -dimensional imaginary-time path integral formulation of quantum impurity problems, the retarded action encodes the hybridization of the impurity with the bath. In this article, we explore the computational power of representing the retarded action as matrix product state (RAMPS). We focus on the challenging Kondo regime of the single-impurity Anderson model, where nonperturbative strong-correlation effects arise at very low energy scales. We demonstrate that the RAMPS approach reliably reaches the Kondo regime for a range of interaction strengths $U$, with a numerical error scaling as a weak power law with inverse temperature. We investigate the convergence behavior of the method with respect to bond dimension and time discretization by analyzing the error of local observables in the full interacting problem and find polynomial scaling in both parameters. Our results suggest that the RAMPS approach offers an alternative avenue for exploring quantum impurity problems, thereby setting the stage for future advancements in the method's capability to address more complex quantum impurity scenarios. Overall, our study contributes to the development of efficient and accurate non-wave-function-based tensor-network methods for quantum impurity problems.",
+        "publication_year": 2023,
+        "citation_count": 14
+      },
+      {
+        "id": "https://openalex.org/W4387744574",
+        "title": "Measurement-induced entanglement and teleportation on a noisy quantum processor",
+        "abstract": "",
+        "publication_year": 2023,
+        "citation_count": 103
+      },
+      {
+        "id": "https://openalex.org/W4387580353",
+        "title": "Purification-based quantum error mitigation of pair-correlated electron simulations",
+        "abstract": "Abstract An important measure of the development of quantum computing platforms has been the simulation of increasingly complex physical systems. Before fault-tolerant quantum computing, robust error-mitigation strategies were necessary to continue this growth. Here, we validate recently introduced error-mitigation strategies that exploit the expectation that the ideal output of a quantum algorithm would be a pure state. We consider the task of simulating electron systems in the seniority-zero subspace where all electrons are paired with their opposite spin. This affords a computational stepping stone to a fully correlated model. We compare the performance of error mitigations on the basis of doubling quantum resources in time or in space on up to 20 qubits of a superconducting qubit quantum processor. We observe a reduction of error by one to two orders of magnitude below less sophisticated techniques such as postselection. We study how the gain from error mitigation scales with the system size and observe a polynomial suppression of error with increased resources. Extrapolation of our results indicates that substantial hardware improvements will be required for classically intractable variational chemistry simulations.",
+        "publication_year": 2023,
+        "citation_count": 35
+      },
+      {
+        "id": "https://openalex.org/W4387461673",
+        "title": "Schwinger boson study of the <mml:math xmlns:mml=\"http://www.w3.org/1998/Math/MathML\"><mml:mrow><mml:msub><mml:mi>J</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mtext>−</mml:mtext><mml:msub><mml:mi>J</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mtext>−</mml:mtext><mml:msub><mml:mi>J</mml:mi><mml:mn>3</mml:mn></mml:msub></mml:mrow></mml:math> kagome Heisenberg antiferromagnet with Dzyaloshinskii-Moriya interactions",
+        "abstract": "Schwinger boson mean-field theory is a powerful approach to study frustrated magnetic systems, which allows to distinguish long-range magnetic orders from quantum spin liquid phases, where quantum fluctuations remain strong up to zero temperature. In this paper, we use this framework to study the Heisenberg model on the kagome lattice with up to third-nearest-neighbor interaction and Dzyaloshinskii-Moriya (DM) antisymmetric exchange. This model has been argued to be relevant for the description of transition metal dichalcogenide bilayers in certain parameter regimes, where spin liquids could be realized. By means of the projective symmetry group classification of possible ans\\\"atze, we study the effect of the DM interaction at first-nearest neighbor and then compute the ${J}_{2}\\text{\\ensuremath{-}}{J}_{3}$ phase diagram at different DM angles. We find a phase displaying chiral spin liquid characteristics up to spin $S=0.5$, indicating an exceptional stability of the state.",
+        "publication_year": 2023,
+        "citation_count": 2
+      }
+    ]
+  },
+  {
+    "name": "Hannes Bernien",
+    "id": "https://openalex.org/A5031426303",
+    "institution": "Harvard University",
+    "score": 0.0,
+    "is_conflict": false,
+    "works": [
+      {
+        "id": "https://openalex.org/W4409248536",
+        "title": "Interleaved Logical Qubits in Atom Arrays",
+        "abstract": "",
+        "publication_year": 2025,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4402772753",
+        "title": "A dual-species Rydberg array",
+        "abstract": "",
+        "publication_year": 2024,
+        "citation_count": 18
+      },
+      {
+        "id": "https://openalex.org/W4406261953",
+        "title": "Circuit Decompositions and Scheduling for Neutral Atom Devices with Limited Local Addressability",
+        "abstract": "",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4400869728",
+        "title": "An integrated atom array-nanophotonic chip platform with background-free imaging",
+        "abstract": "Abstract Arrays of neutral atoms trapped in optical tweezers have emerged as a leading platform for quantum information processing and quantum simulation due to their scalability, reconfigurable connectivity, and high-fidelity operations. Individual atoms are promising candidates for quantum networking due to their capability to emit indistinguishable photons that are entangled with their internal atomic states. Integrating atom arrays with photonic interfaces would enable distributed architectures in which nodes hosting many processing qubits could be efficiently linked together via the distribution of remote entanglement. However, many atom array techniques cease to work in close proximity to photonic interfaces, with atom detection via standard fluorescence imaging presenting a major challenge due to scattering from nearby photonic devices. Here, we demonstrate an architecture that combines atom arrays with up to 64 optical tweezers and a millimeter-scale photonic chip hosting more than 100 nanophotonic cavities. We achieve high-fidelity ( ~ 99.2%), background-free imaging in close proximity to nanofabricated cavities using a multichromatic excitation and detection scheme. The atoms can be imaged while trapped a few hundred nanometers above the dielectric surface, which we verify using Stark shift measurements of the modified trapping potential. Finally, we rearrange atoms into defect-free arrays and load them simultaneously onto the same or multiple devices.",
+        "publication_year": 2024,
+        "citation_count": 10
+      },
+      {
+        "id": "https://openalex.org/W4400483449",
+        "title": "Realizing fracton order from long-range quantum entanglement in\n  programmable Rydberg atom arrays",
+        "abstract": "Storing quantum information, unlike information in a classical computer, requires battling quantum decoherence, which results in a loss of information over time. To achieve error-resistant quantum memory, one would like to store the information in a quantum superposition of degenerate states engineered in such a way that local sources of noise cannot change one state into another, thus preventing quantum decoherence. One promising concept is that of fracton order -- a phase of matter with a large ground state degeneracy that grows subextensively with the system size. Unfortunately, the models realizing fractons are not friendly to experimental implementations as they require unnatural interactions between a substantial number (of the order of ten) of qubits. We demonstrate how this limitation can be circumvented by leveraging the long-range quantum entanglement created using only pairwise interactions between the code and ancilla qubits, realizable in programmable tweezer arrays of Rydberg atoms. We show that this platform also allows to detect and correct certain types of errors en route to the goal of true error-resistant quantum memory.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4399127665",
+        "title": "Rydberg Platform for Nonergodic Chiral Quantum Dynamics",
+        "abstract": "We propose a mechanism for engineering chiral interactions in Rydberg atoms via a directional antiblockade condition, where an atom can change its state only if an atom to its right (or left) is excited. The scalability of our scheme enables us to explore the many-body dynamics of kinetically constrained models with unidirectional character. We observe nonergodic behavior via either scars, confinement, or localization, upon simply tuning the strength of two driving fields acting on the atoms. We discuss how our mechanism persists in the presence of classical noise and how the degree of chirality in the interactions can be tuned, opening towards the frontier of directional, strongly correlated, quantum mechanics using neutral atoms arrays.",
+        "publication_year": 2024,
+        "citation_count": 10
+      },
+      {
+        "id": "https://openalex.org/W4396776358",
+        "title": "Hybrid Quantum Repeaters with Ensemble-based Quantum Memories and Single-spin Photon Transducers",
+        "abstract": "<title>Abstract</title> Reliable quantum communication over hundreds of kilometers is a daunting yet necessary requirement for a quantum internet. To overcome photon loss, the deployment of quantum repeater stations between distant network nodes is necessary. A plethora of different quantum hardware is being developed for this purpose, each platform with its own opportunities and challenges. Here, we propose to combine two promising hardware platforms in a hybrid quantum repeater architecture to lower the cost and boost the performance of long-distance quantum communication. We outline how ensemble-based quantum memories combined with single-spin photon transducers, which can transfer quantum information between a photon and a single spin, can facilitate massive multiplexing, efficient photon generation, and quantum logic for amplifying communication rates. As a specific example, we describe how a single Rubidium (Rb) atom coupled to nanophotonic resonators can function as a high-rate, telecom-visible entangled photon source with the visible photon being compatible with storage in a Thulium-doped crystal memory (Tm-memory) and the telecom photon being compatible with low loss fiber propagation. We experimentally verify that Tm and Rb transitions are in resonance with each other. Our analysis shows that by employing up to 9 repeater stations, each equipped with two Tm-memories capable of holding up to 625 storage modes, along with four single Rb atoms, one can reach a quantum communication rate of about 10 secret bits per second across distances of up to 1000 km.",
+        "publication_year": 2024,
+        "citation_count": 1
+      },
+      {
+        "id": "https://openalex.org/W4390637877",
+        "title": "Donor-acceptor pairs in wide-bandgap semiconductors for quantum technology applications",
+        "abstract": "Abstract We propose a quantum science platform utilizing the dipole-dipole coupling between donor-acceptor pairs (DAPs) in wide bandgap semiconductors to realize optically controllable, long-range interactions between defects in the solid state. We carry out calculations based on density functional theory (DFT) to investigate the electronic structure and interactions of DAPs formed by various substitutional point-defects in diamond and silicon carbide (SiC). We determine the most stable charge states and evaluate zero phonon lines using constrained DFT and compare our results with those of simple donor-acceptor pair (DAP) models. We show that polarization differences between ground and excited states lead to unusually large electric dipole moments for several DAPs in diamond and SiC. We predict photoluminescence spectra for selected substitutional atoms and show that while B-N pairs in diamond are challenging to control due to their large electron-phonon coupling, DAPs in SiC, especially Al-N pairs, are suitable candidates to realize long-range optically controllable interactions.",
+        "publication_year": 2024,
+        "citation_count": 10
+      },
+      {
+        "id": "https://openalex.org/W4391125424",
+        "title": "A dual-species Rydberg array",
+        "abstract": "Rydberg atom arrays have emerged as a leading platform for quantum information science. Reaching system sizes of hundreds of long-lived qubits, these arrays are used for highly coherent analog quantum simulation, as well as digital quantum computation. Advanced quantum protocols such as quantum error correction, however, require midcircuit qubit operations, including the replenishment, reset, and readout of a subset of qubits. A compelling strategy to achieve these capabilities is a dual-species architecture in which a second atomic species can be controlled without crosstalk, and entangled with the first via Rydberg interactions. Here, we realize a dual-species Rydberg array consisting of rubidium (Rb) and cesium (Cs) atoms, and explore new regimes of interactions and dynamics not accessible in single-species architectures. We achieve enhanced interspecies interactions by electrically tuning the Rydberg states close to a Forster resonance. In this regime, we demonstrate interspecies Rydberg blockade and implement quantum state transfer from one species to another. We then generate a Bell state between Rb and Cs hyperfine qubits via an interspecies controlled-phase gate. Finally, we combine interspecies entanglement with native midcircuit readout to achieve quantum non-demolition measurement of a Rb qubit using an auxiliary Cs qubit. The techniques demonstrated here pave the way toward scalable measurement-based protocols and real-time feedback control in large-scale quantum systems.",
+        "publication_year": 2024,
+        "citation_count": 1
+      },
+      {
+        "id": "https://openalex.org/W4391211985",
+        "title": "Hybrid Quantum Repeaters with Ensemble-based Quantum Memories and Single-spin Photon Transducers",
+        "abstract": "Reliable quantum communication over hundreds of kilometers is a daunting yet necessary requirement for a quantum internet. To overcome photon loss, the deployment of quantum repeater stations between distant network nodes is necessary. A plethora of different quantum hardware is being developed for this purpose, each platform with its own opportunities and challenges. Here, we propose to combine two promising hardware platforms in a hybrid quantum repeater architecture to lower the cost and boost the performance of long-distance quantum communication. We outline how ensemble-based quantum memories combined with single-spin photon transducers, which are devices that can generate, convert, and modulate photons with single spins, can facilitate massive multiplexing, efficient photon generation, and quantum logic for amplifying communication rates. As a specific example, we describe how a single Rubidium (Rb) atom coupled to nanophotonic resonators can function as a high-rate, telecom-visible entangled photon source with the visible photon being compatible with storage in a Thulium-doped crystal memory (Tm-memory) and the telecom photon being compatible with low loss fiber propagation. We experimentally verify that Tm and Rb transitions are in resonance with each other. Our analysis shows that by employing up to 16 repeater stations, each equipped with two Tm-memories capable of holding up to 350 storage modes, along with four single Rb atoms, one can reach a quantum communication rate exceeding hundreds of qubits per second across distances of up to 1000 km.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4386802086",
+        "title": "Quantum networks with neutral atom processing nodes",
+        "abstract": "Abstract Quantum networks providing shared entanglement over a mesh of quantum nodes will revolutionize the field of quantum information science by offering novel applications in quantum computation, enhanced precision in networks of sensors and clocks, and efficient quantum communication over large distances. Recent experimental progress with individual neutral atoms demonstrates a high potential for implementing the crucial components of such networks. We highlight latest developments and near-term prospects on how arrays of individually controlled neutral atoms are suited for both efficient remote entanglement generation and large-scale quantum information processing, thereby providing the necessary features for sharing high-fidelity and error-corrected multi-qubit entangled states between the nodes. We describe both the functionality requirements and several examples for advanced, large-scale quantum networks composed of neutral atom processing nodes.",
+        "publication_year": 2023,
+        "citation_count": 40
+      },
+      {
+        "id": "https://openalex.org/W4378803463",
+        "title": "Toward quantum simulation and networking using the quantum matter synthesizer",
+        "abstract": "",
+        "publication_year": 2023,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4378195004",
+        "title": "Mid-circuit correction of correlated phase errors using an array of spectator qubits",
+        "abstract": "Scaling up invariably error-prone quantum processors is a formidable challenge. While quantum error correction ultimately promises fault-tolerant operation, the required qubit overhead and error thresholds are daunting, and many codes break down under correlated noise. Recent proposals have suggested a complementary approach based on co-located, auxiliary 'spectator' qubits. These act as in-situ probes of noise, and enable real-time, coherent corrections of the resulting errors on the data qubits. Here, we use an array of cesium spectator qubits to correct correlated phase errors on an array of rubidium data qubits. Crucially, by combining in-sequence readouts, data processing, and feed-forward operations, these correlated errors are suppressed within the execution of the quantum circuit. The protocol is broadly applicable to quantum information platforms, and our approach establishes key tools for scaling neutral-atom quantum processors: mid-circuit readout of atom arrays, real-time processing and feed-forward, and coherent mid-circuit reloading of atomic qubits.",
+        "publication_year": 2023,
+        "citation_count": 67
+      },
+      {
+        "id": "https://openalex.org/W4319289323",
+        "title": "Data and plotting code for 'Mid-circuit correction of correlated phase errors using an array of spectator qubits'",
+        "abstract": "",
+        "publication_year": 2023,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4317757273",
+        "title": "A picture of a swinging atom",
+        "abstract": "",
+        "publication_year": 2023,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4385374374",
+        "title": "Decomposing and Routing Quantum Circuits Under Constraints for Neutral Atom Architectures",
+        "abstract": "Quantum computing is in an era defined by rapidly evolving quantum hardware technologies, combined with persisting high gate error rates, large amounts of noise, and short coherence times. Overcoming these limitations requires systems-level approaches that account for the strengths and weaknesses of the underlying hardware technology. Yet few hardware-aware compiler techniques exist for neutral atom devices, with no prior work on compiling to the neutral atom native gate set. In particular, current neutral atom hardware does not support certain single-qubit rotations via local addressing, which often requires the circuit to be decomposed into a large number of gates, leading to long circuit durations and low overall fidelities. We propose the first compiler designed to overcome the challenges of limited local addressibility in neutral atom quantum computers. We present algorithms to decompose circuits into the neutral atom native gate set, with emphasis on optimizing total pulse area of global gates, which dominate gate execution costs in several current architectures. Furthermore, we explore atom movement as an alternative to expensive gate decompositions, gaining immense speedup with routing, which remains a huge overhead for many quantum circuits. Our decomposition optimizations result in up to ~3.5x and ~2.9x speedup in time spent executing global gates and time spent executing single-qubit gates, respectively. When combined with our atom movement routing algorithms, our compiler achieves up to ~10x reduction in circuit duration, with over ~2x improvement in fidelity. We show that our compiler strategies can be adapted for a variety of hardware-level parameters as neutral atom technology continues to develop.",
+        "publication_year": 2023,
+        "citation_count": 7
+      },
+      {
+        "id": "https://openalex.org/W4376166907",
+        "title": "Donor-Acceptor Pairs in Wide-Bandgap Semiconductors for Quantum Technology Applications",
+        "abstract": "We propose a quantum science platform utilizing the dipole-dipole coupling between donor-acceptor pairs (DAPs) in wide bandgap semiconductors to realize optically controllable, long-range interactions between defects in the solid state. We carry out calculations based on density functional theory (DFT) to investigate the electronic structure and interactions of DAPs formed by various substitutional point defects in diamond and silicon carbide (SiC). We determine the most stable charge states and evaluate zero phonon lines using constrained DFT and compare our results with those of simple donor-acceptor pair (DAP) models. We show that polarization differences between ground and excited states lead to unusually large electric dipole moments for several DAPs in diamond and SiC. We predict radiative lifetimes and photoluminescence spectra for selected substitutional atoms and show that while B-N pairs in diamond are challenging to control due to their large electron-phonon coupling, DAPs in SiC, especially Al-N pairs, are suitable candidates to realize long-range optically controllable interactions.",
+        "publication_year": 2023,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4362679117",
+        "title": "Quantum networks with neutral atom processing nodes",
+        "abstract": "Quantum networks providing shared entanglement over a mesh of quantum nodes will revolutionize the field of quantum information science by offering novel applications in quantum computation, enhanced precision in networks of sensors and clocks, and efficient quantum communication over large distances. Recent experimental progress with individual neutral atoms demonstrates a high potential for implementing the crucial components of such networks. We highlight latest developments and near-term prospects on how arrays of individually controlled neutral atoms are suited for both efficient remote entanglement generation and large-scale quantum information processing, thereby providing the necessary features for sharing high-fidelity and error-corrected multi-qubit entangled states between the nodes. We describe both the functionality requirements and several examples for advanced, large-scale quantum networks composed of neutral atom processing nodes.",
+        "publication_year": 2023,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4387030665",
+        "title": "A Rydberg platform for non-ergodic chiral quantum dynamics",
+        "abstract": "We propose a mechanism for engineering chiral interactions in Rydberg atoms via a directional antiblockade condition, where an atom can change its state only if an atom to its right (or left) is excited. The scalability of our scheme enables us to explore the many-body dynamics of kinetically constrained models with unidirectional character. We observe non-ergodic behavior via either scars, confinement, or localization, upon simply tuning the strength of two driving fields acting on the atoms. We discuss how our mechanism persists in the presence of classical noise and how the degree of chirality in the interactions can be tuned, opening towards the frontier of directional, strongly correlated, quantum mechanics using neutral atoms arrays.",
+        "publication_year": 2023,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4388512409",
+        "title": "An integrated atom array -- nanophotonic chip platform with background-free imaging",
+        "abstract": "Arrays of neutral atoms trapped in optical tweezers have emerged as a leading platform for quantum information processing and quantum simulation due to their scalability, reconfigurable connectivity, and high-fidelity operations. Individual atoms are promising candidates for quantum networking due to their capability to emit indistinguishable photons that are entangled with their internal atomic states. Integrating atom arrays with photonic interfaces would enable distributed architectures in which nodes hosting many processing qubits could be efficiently linked together via the distribution of remote entanglement. However, many atom array techniques cease to work in close proximity to photonic interfaces, with atom detection via standard fluorescence imaging presenting a major challenge due to scattering from nearby photonic devices. Here, we demonstrate an architecture that combines atom arrays with up to 64 optical tweezers and a millimeter-scale photonic chip hosting more than 100 nanophotonic devices. We achieve high-fidelity (~99.2%), background-free imaging in close proximity to nanofabricated devices using a multichromatic excitation and detection scheme. The atoms can be imaged while trapped a few hundred nanometers above the dielectric surface, which we verify using Stark shift measurements of the modified trapping potential. Finally, we rearrange atoms into defect-free arrays and load them simultaneously onto the same or multiple devices.",
+        "publication_year": 2023,
+        "citation_count": 0
+      }
+    ]
+  },
+  {
+    "name": "J. Zhang",
+    "id": "https://openalex.org/A5033555080",
+    "institution": "National Institute of Standards and Technology",
+    "score": 0.0,
+    "is_conflict": false,
+    "works": [
+      {
+        "id": "https://openalex.org/W2785765801",
+        "title": "Cryogenic trapped-ion system for large scale quantum simulation",
+        "abstract": "Trapped-ion systems are among the most promising hardware candidates for large scale quantum computing and quantum simulation. In order to scale up such devices, it is necessary to engineer extreme-high vacuum (XHV) environments to prevent background gas from disrupting the ion crystal. Here we present a new cryogenic ion trapping system designed for long time storage of large ion chains. Our apparatus is based on a segmented-blade ion trap enclosed in a 4 K cryostat, which enables us to routinely trap and hold over 100 171Yb+ ions for hours in a linear configuration, due to low background gas pressure from differential cryo-pumping. We characterize the XHV cryogenic environment measuring pressures below by recording both inelastic and elastic collisions between the ion chain and the molecular background gas. We also demonstrate coherent one and two-qubit operations and nearly equidistant ion spacing for chains of up to 44 ions using anharmonic axial potentials, in order to enable better detection and single ion addressing in large ion arrays. We anticipate that this reliable production and lifetime enhancement of large linear ion chains will enable quantum simulation of models that are intractable with classical computer modeling.",
+        "publication_year": 2018,
+        "citation_count": 67
+      },
+      {
+        "id": "https://openalex.org/W2808138095",
+        "title": "Managing agricultural drought in Sweden using a novel spatially-explicit model from the perspective of water-food-energy nexus",
+        "abstract": "",
+        "publication_year": 2018,
+        "citation_count": 59
+      },
+      {
+        "id": "https://openalex.org/W2744305830",
+        "title": "Observation of a many-body dynamical phase transition with a 53-qubit quantum simulator",
+        "abstract": "",
+        "publication_year": 2017,
+        "citation_count": 991
+      },
+      {
+        "id": "https://openalex.org/W3104217726",
+        "title": "Non-thermalization in trapped atomic ion spin chains",
+        "abstract": "Linear arrays of trapped and laser cooled atomic ions are a versatile platform for studying emergent phenomena in strongly-interacting many-body systems. Effective spins are encoded in long-lived electronic levels of each ion and made to interact through laser mediated optical dipole forces. The advantages of experiments with cold trapped ions, including high spatiotemporal resolution, decoupling from the external environment, and control over the system Hamiltonian, are used to measure quantum effects not always accessible in natural condensed matter samples. In this review we highlight recent work using trapped ions to explore a variety of non-ergodic phenomena in long-range interacting spin-models which are heralded by memory of out-of-equilibrium initial conditions. We observe long-lived memory in static magnetizations for quenched many-body localization and prethermalization, while memory is preserved in the periodic oscillations of a driven discrete time crystal state.",
+        "publication_year": 2017,
+        "citation_count": 41
+      },
+      {
+        "id": "https://openalex.org/W2526468162",
+        "title": "Observation of a discrete time crystal",
+        "abstract": "",
+        "publication_year": 2017,
+        "citation_count": 1016
+      },
+      {
+        "id": "https://openalex.org/W2603423665",
+        "title": "Interacting Many-Body Spin Systems that Fail to Quantum Thermalize",
+        "abstract": "This talk will describe the experimental observation of two mechanisms -- many-body localization (MBL) and prethermalization – that prevent interacting quantum systems from attaining thermal equilibrium.",
+        "publication_year": 2017,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W2558766080",
+        "title": "Photoionization of the francium 7P<sub>3/2</sub> state",
+        "abstract": "We have measured the non-resonant photoionization cross section of the 7P 3/2 state of francium for 442 nm light to be 20.8 ± 7.1 Mb. Atoms were irradiated in a magneto-optical trap, and we deduce the photoionization rate from the change in trap lifetime. The result is consistent with a simple extrapolation of known cross sections for other alkali atoms.",
+        "publication_year": 2016,
+        "citation_count": 2
+      },
+      {
+        "id": "https://openalex.org/W2539439292",
+        "title": "Efficient inter-trap transfer of cold francium atoms",
+        "abstract": "",
+        "publication_year": 2016,
+        "citation_count": 10
+      },
+      {
+        "id": "https://openalex.org/W2343678897",
+        "title": "Engineering large Stark shifts for control of individual clock state qubits",
+        "abstract": "In quantum information science, the external control of qubits must be balanced with the extreme isolation of the qubits from the environment. Atomic qubit systems typically mitigate this balance through the use of gated laser fields that can create superpositions and entanglement between qubits. Here we propose the use of high-order optical Stark shifts from optical fields to manipulate the splitting of atomic qubits that are insensitive to other types of fields. We demonstrate a fourth-order ac Stark shift in a trapped atomic ion system that does not require extra laser power beyond that needed for other control fields. We individually address a chain of tightly spaced trapped ions and show how these controlled shifts can produce an arbitrary product state of 10 ions as well as generate site-specific magnetic field terms in a simulated spin Hamiltonian.",
+        "publication_year": 2016,
+        "citation_count": 39
+      },
+      {
+        "id": "https://openalex.org/W2238638281",
+        "title": "Suitable and optimal locations for implementing photovoltaic water pumping systems for grassland irrigation in China",
+        "abstract": "",
+        "publication_year": 2016,
+        "citation_count": 47
+      }
+    ]
+  },
+  {
+    "name": "Soonwon Choi",
+    "id": "https://openalex.org/A5053736683",
+    "institution": "Harvard University",
+    "score": 0.0,
+    "is_conflict": false,
+    "works": [
+      {
+        "id": "https://openalex.org/W4408406372",
+        "title": "Exact Quantum Algorithms for Quantum Phase Recognition: Renormalization Group and Error Correction",
+        "abstract": "We explore the relationship between renormalization-group (RG) flow and error correction by constructing quantum algorithms that exactly recognize one-dimensional symmetry-protected topological (SPT) phases protected by finite internal Abelian symmetries. For each SPT phase, our algorithm runs a quantum circuit, which emulates RG flow: an arbitrary input ground-state wave function in the phase is mapped to a unique minimally entangled reference state, thereby allowing for efficient phase identification. This construction is enabled by viewing a generic input state in the phase as a collection of coherent “errors” applied to the reference state, and engineering a quantum circuit to efficiently detect and correct such errors. Importantly, the error-correction threshold is proven to coincide exactly with the phase boundary. We discuss the implications of our results in the context of condensed-matter physics, machine learning, and near-term quantum algorithms. Published by the American Physical Society 2025",
+        "publication_year": 2025,
+        "citation_count": 2
+      },
+      {
+        "id": "https://openalex.org/W4407423852",
+        "title": "Critically slow Hilbert-space ergodicity in quantum morphic drives",
+        "abstract": "The maximum entropy principle is foundational for statistical analyses of complex dynamics. This principle has been challenged by the findings of a previous work [Phys. Rev. X 7, 031034 (2017)], where it was argued that a quantum system driven in time by a certain aperiodic sequence without any explicit symmetries, dubbed the Thue-Morse drive, gives rise to emergent nonergodic steady states which are underpinned by effective conserved quantities. Here, we resolve this apparent tension. We rigorously prove that the Thue-Morse drive achieves a very strong notion of quantum ergodicity in the long-time limit: the time evolution of any initial state uniformly visits every corner of its Hilbert space. On the other hand, we find the dynamics also approximates a Floquet drive for arbitrarily long albeit finite periods of time with no characteristic timescale, resulting in a scale-free ergodic dynamics we call critically slow complete Hilbert-space ergodicity (CS-CHSE). Furthermore, numerical studies reveal that CS-CHSE is not specific to the Thue-Morse drive and is in fact exhibited by many other aperiodic drives derived from morphic sequences, i.e., words derived from repeatedly applying substitution rules on basic characters. Our work presents a new class of dynamics in time-dependent quantum systems where full ergodicity is eventually attained, but only after astronomically long times.",
+        "publication_year": 2025,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4407156534",
+        "title": "Probing Dynamics of a Two-Dimensional Dipolar Spin Ensemble Using Single Qubit Sensor",
+        "abstract": "Understanding the thermalization dynamics of quantum many-body systems at the microscopic level is among the central challenges of modern statistical physics. Here we experimentally investigate individual spin dynamics in a two-dimensional ensemble of electron spins on the surface of a diamond crystal. We use a near-surface nitrogen-vacancy center as a nanoscale magnetic sensor to probe correlation dynamics of individual spins in a dipolar interacting surface spin ensemble. We observe that the relaxation rate for each spin is significantly slower than the naïve expectation based on independently estimated dipolar interaction strengths with nearest neighbors and is strongly correlated with the timescale of the local magnetic field fluctuation. We show that this anomalously slow relaxation rate is due to the presence of strong dynamical disorder and present a quantitative explanation based on dynamic resonance counting. Finally, we use resonant spin-lock driving to control the effective strength of the local magnetic fields and reveal the role of the dynamical disorder in different regimes. Our work paves the way towards microscopic study and control of quantum thermalization in strongly interacting disordered spin ensembles.",
+        "publication_year": 2025,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4406448904",
+        "title": "Quantum Computing Enhanced Sensing",
+        "abstract": "Quantum computing and quantum sensing represent two distinct frontiers of quantum information science. In this work, we harness quantum computing to solve a fundamental and practically important sensing problem: the detection of weak oscillating fields with unknown strength and frequency. We present a quantum computing enhanced sensing protocol that outperforms all existing approaches. Furthermore, we prove our approach is optimal by establishing the Grover-Heisenberg limit -- a fundamental lower bound on the minimum sensing time. The key idea is to robustly digitize the continuous, analog signal into a discrete operation, which is then integrated into a quantum algorithm. Our metrological gain originates from quantum computation, distinguishing our protocol from conventional sensing approaches. Indeed, we prove that broad classes of protocols based on quantum Fisher information, finite-lifetime quantum memory, or classical signal processing are strictly less powerful. Our protocol is compatible with multiple experimental platforms. We propose and analyze a proof-of-principle experiment using nitrogen-vacancy centers, where meaningful improvements are achievable using current technology. This work establishes quantum computation as a powerful new resource for advancing sensing capabilities.",
+        "publication_year": 2025,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4405562836",
+        "title": "Efficiently measuring $d$-wave pairing and beyond in quantum gas\n  microscopes",
+        "abstract": "Understanding the mechanism of high-temperature superconductivity is among the most important problems in physics, for which quantum simulation can provide new insights. However, it remains challenging to characterize superconductivity in existing cold-atom quantum simulation platforms. Here, we introduce a protocol for measuring a broad class of observables in fermionic quantum gas microscopes, including long-range superconducting pairing correlations (after a repulsive-to-attractive mapping). The protocol only requires global controls followed by site-resolved particle number measurements -- capabilities that have been already demonstrated in multiple experiments -- and is designed by analyzing the Hilbert-space structure of dimers of two sites. The protocol is sample efficient and we further optimize our pulses for robustness to experimental imperfections such as lattice inhomogeneity. Our work introduces a general tool for manipulating quantum states on optical lattices, enhancing their ability to tackle problems such as that of high-temperature superconductivity.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4405108832",
+        "title": "Optimized Trajectory Unraveling for Classical Simulation of Noisy Quantum Dynamics",
+        "abstract": "The dynamics of open quantum systems can be simulated by unraveling it into an ensemble of pure state trajectories undergoing nonunitary monitored evolution, which has recently been shown to undergo measurement-induced entanglement phase transition. Here, we show that, for an arbitrary decoherence channel, one can optimize the unraveling scheme to lower the threshold for entanglement phase transition, thereby enabling efficient classical simulation of the open dynamics for a broader range of decoherence rates. Taking noisy random unitary circuits as a paradigmatic example, we analytically derive the optimum unraveling basis that on average minimizes the threshold. Moreover, we present a heuristic algorithm that adaptively optimizes the unraveling basis for given noise channels, also significantly extending the simulatable regime. When applied to noisy Hamiltonian dynamics, the heuristic approach indeed extends the regime of efficient classical simulation based on matrix product states beyond conventional quantum trajectory methods. Finally, we assess the possibility of using a quasi-local unraveling, which involves multiple qubits and time steps, to efficiently simulate open systems with an arbitrarily small but finite decoherence rate.",
+        "publication_year": 2024,
+        "citation_count": 2
+      },
+      {
+        "id": "https://openalex.org/W4405107446",
+        "title": "Hilbert-Space Ergodicity in Driven Quantum Systems: Obstructions and Designs",
+        "abstract": "Despite its long history, a canonical formulation of quantum ergodicity that applies to general classes of quantum dynamics, including driven systems, has not been fully established. Here we introduce and study a notion of quantum ergodicity for closed systems with time-dependent Hamiltonians, defined as statistical randomness exhibited in their longtime dynamics. Concretely, we consider the temporal ensemble of quantum states (time-evolution operators) generated by the evolution, and investigate the conditions necessary for them to be statistically indistinguishable from uniformly random states (operators) in the Hilbert space (space of unitaries). We find that the number of driving frequencies underlying the Hamiltonian needs to be sufficiently large for this to occur. Conversely, we show that statistical —indistinguishability up to some large but finite moment—can already be achieved by a quantum system driven with a single frequency, i.e., a Floquet system, as long as the driving period is sufficiently long. Our work relates the complexity of a time-dependent Hamiltonian and that of the resulting quantum dynamics, and offers a fresh perspective to the established topics of quantum ergodicity and chaos from the lens of quantum information. Published by the American Physical Society 2024",
+        "publication_year": 2024,
+        "citation_count": 1
+      },
+      {
+        "id": "https://openalex.org/W4404694109",
+        "title": "Maximum Entropy Principle in Deep Thermalization and in Hilbert-Space Ergodicity",
+        "abstract": "We report universal statistical properties displayed by ensembles of pure states that naturally emerge in quantum many-body systems. Specifically, two classes of state ensembles are considered: those formed by (i) the temporal trajectory of a quantum state under unitary evolution or (ii) the quantum states of small subsystems obtained by partial, local projective measurements performed on their complements. These cases, respectively, exemplify the phenomena of “Hilbert-space ergodicity” and “deep thermalization.” In both cases, the resultant ensembles are defined by a simple principle: The distributions of pure states have maximum entropy, subject to constraints such as energy conservation, and effective constraints imposed by thermalization. We present and numerically verify quantifiable signatures of this principle by deriving explicit formulas for all statistical moments of the ensembles, proving the necessary and sufficient conditions for such universality under widely accepted assumptions, and describing their measurable consequences in experiments. We further discuss information-theoretic implications of the universality: Our ensembles have maximal information content while being maximally difficult to interrogate, establishing that generic quantum state ensembles that occur in nature hide (scramble) information as strongly as possible. Our results generalize the notions of Hilbert-space ergodicity to time-independent Hamiltonian dynamics and deep thermalization from infinite to finite effective temperature. Our work presents new perspectives to characterize and understand universal behaviors of quantum dynamics using statistical and information-theoretic tools. Published by the American Physical Society 2024",
+        "publication_year": 2024,
+        "citation_count": 9
+      },
+      {
+        "id": "https://openalex.org/W4403663029",
+        "title": "Quantum thermalization of translation-invariant systems at high\n  temperature",
+        "abstract": "Quantum thermalization describes how closed quantum systems can effectively reach thermal equilibrium, resolving the apparent incongruity between the reversibility of Schr\\\"odinger's equation and the irreversible entropy growth dictated by the second law of thermodynamics. Despite its ubiquity and conceptual significance, a complete proof of quantum thermalization has remained elusive for several decades. Here, we prove that quantum thermalization must occur in any qubit system with local interactions satisfying three conditions: (i) high effective temperature, (ii) translation invariance, and (iii) no perfect resonances in the energy spectrum. Specifically, we show that a typical, initially unentangled pure state drawn from any ensemble with maximum entropy becomes locally indistinguishable from a Gibbs state upon unitary evolution. Our proof relies on a recent breakthrough in quantum information theory proving the separability of high-temperature thermal states, as well as on new technical results identifying sufficient conditions for quantum thermalization, whose applicability extends beyond our main result. Our work illustrates that statistical physics can be understood as an emergent phenomenon, explicitly derived from the first principles of quantum mechanics.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4400601294",
+        "title": "Quantum Algorithm to Prepare Quasi-Stationary States",
+        "abstract": "Quantum dynamics can be analyzed via the structure of energy eigenstates. However, in the many-body setting, preparing eigenstates associated with finite temperatures requires time scaling exponentially with system size. In this work we present an efficient quantum search algorithm which produces quasi-stationary states, having energies supported within narrow windows of a dense many-body spectrum. In time scaling polynomially with system size, the algorithm produces states with inverse polynomial energy width, which can in turn be used to analyze many-body dynamics out to polynomial times. The algorithm is based on quantum singular value transformations and quantum signal processing, and provides a quadratic speedup over measurement-based approaches. We discuss how this algorithm can be used as a primitive to investigate the mechanisms underlying thermalization and hydrodynamics in many-body quantum systems.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4392984773",
+        "title": "Benchmarking highly entangled states on a 60-atom analogue quantum simulator",
+        "abstract": "Abstract Quantum systems have entered a competitive regime in which classical computers must make approximations to represent highly entangled quantum states 1,2 . However, in this beyond-classically-exact regime, fidelity comparisons between quantum and classical systems have so far been limited to digital quantum devices 2–5 , and it remains unsolved how to estimate the actual entanglement content of experiments 6 . Here, we perform fidelity benchmarking and mixed-state entanglement estimation with a 60-atom analogue Rydberg quantum simulator, reaching a high-entanglement entropy regime in which exact classical simulation becomes impractical. Our benchmarking protocol involves extrapolation from comparisons against an approximate classical algorithm, introduced here, with varying entanglement limits. We then develop and demonstrate an estimator of the experimental mixed-state entanglement 6 , finding our experiment is competitive with state-of-the-art digital quantum devices performing random circuit evolution 2–5 . Finally, we compare the experimental fidelity against that achieved by various approximate classical algorithms, and find that only the algorithm we introduce is able to keep pace with the experiment on the classical hardware we use. Our results enable a new model for evaluating the ability of both analogue and digital quantum devices to generate entanglement in the beyond-classically-exact regime, and highlight the evolving divide between quantum and classical systems.",
+        "publication_year": 2024,
+        "citation_count": 28
+      },
+      {
+        "id": "https://openalex.org/W4392971707",
+        "title": "A Maximum Entropy Principle in Deep Thermalization and in Hilbert-Space\n  Ergodicity",
+        "abstract": "We report universal statistical properties displayed by ensembles of pure states that naturally emerge in quantum many-body systems. Specifically, two classes of state ensembles are considered: those formed by i) the temporal trajectory of a quantum state under unitary evolution or ii) the quantum states of small subsystems obtained by partial, local projective measurements performed on their complements. These cases respectively exemplify the phenomena of \"Hilbert-space ergodicity\" and \"deep thermalization.\" In both cases, the resultant ensembles are defined by a simple principle: the distributions of pure states have maximum entropy, subject to constraints such as energy conservation, and effective constraints imposed by thermalization. We present and numerically verify quantifiable signatures of this principle by deriving explicit formulae for all statistical moments of the ensembles; proving the necessary and sufficient conditions for such universality under widely-accepted assumptions; and describing their measurable consequences in experiments. We further discuss information-theoretic implications of the universality: our ensembles have maximal information content while being maximally difficult to interrogate, establishing that generic quantum state ensembles that occur in nature hide (scramble) information as strongly as possible. Our results generalize the notions of Hilbert-space ergodicity to time-independent Hamiltonian dynamics and deep thermalization from infinite to finite effective temperature. Our work presents new perspectives to characterize and understand universal behaviors of quantum dynamics using statistical and information theoretic tools.",
+        "publication_year": 2024,
+        "citation_count": 2
+      },
+      {
+        "id": "https://openalex.org/W4392971703",
+        "title": "Universal fluctuations and noise learning from Hilbert-space ergodicity",
+        "abstract": "Systems reaching thermal equilibrium are ubiquitous. For classical systems, this phenomenon is typically understood statistically through ergodicity in phase space, but translating this to quantum systems is a long-standing problem of interest. Recently a quantum notion of ergodicity has been proposed, namely that isolated, global quantum states uniformly explore their available state space, dubbed Hilbert-space ergodicity. Here we observe signatures of this process with an experimental Rydberg quantum simulator and various numerical models, before generalizing to the case of a local quantum system interacting with its environment. For a closed system, where the environment is a complementary subsystem, we predict and observe a smooth quantum-to-classical transition in that observables progress from large, quantum fluctuations to small, Gaussian fluctuations as the bath size grows. This transition is universal on a quantitative level amongst a wide range of systems, including those at finite temperature, those with itinerant particles, and random circuits. Then, we consider the case of an open system interacting noisily with an external environment. We predict the statistics of observables under largely arbitrary noise channels including those with correlated errors, allowing us to discriminate candidate error models both for continuous Hamiltonian time evolution and for digital random circuits. Ultimately our results clarify the role of ergodicity in quantum dynamics, with fundamental and practical consequences.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4392284845",
+        "title": "Limitations of Linear Cross-Entropy as a Measure for Quantum Advantage",
+        "abstract": "Demonstrating quantum advantage requires experimental implementation of a computational task that is hard to achieve using state-of-the-art classical systems. One approach is to perform sampling from a probability distribution associated with a certain class of highly entangled many-body wave functions. It has been suggested that such a quantum advantage can be certified with the (XEB). We critically examine this notion. First, we consider a “benign” setting, where an honest implementation of a noisy quantum circuit is assumed, and characterize the conditions under which the XEB approximates the of quantum dynamics. Second, we assume an “adversarial” setting, where all possible classical algorithms are considered for comparisons, and show that achieving relatively high XEB values does not imply faithful simulation of quantum dynamics. Specifically, we present an efficient classical algorithm that achieves high XEB values, namely 5–12% of those obtained in the state-of-the-art experiments, within just a few seconds using a single GPU machine. This is made possible by identifying and exploiting several vulnerabilities of the XEB, which allows us to achieve high XEB values without simulating a full quantum circuit. Remarkably, our algorithm features with the system size than a noisy quantum device for commonly studied random circuit ensembles in various architecture. We quantitatively explain the success of our algorithm and the limitations of the XEB by using a theoretical framework, in which the dynamics of the average XEB and fidelity are mapped to classical statistical mechanics models. Using this framework, we illustrate the relation between the XEB and the fidelity for quantum circuits in various architectures, with different choices of gate sets, and in the presence of noise. Taken together, our results demonstrate that XEB’s utility as a proxy for fidelity hinges on several conditions, which should be independently checked in the benign setting, but cannot be assumed in the general adversarial setting. Therefore, the XEB on its own has a limited utility as a benchmark for quantum advantage. We briefly discuss potential ways to overcome these limitations. Published by the American Physical Society 2024",
+        "publication_year": 2024,
+        "citation_count": 25
+      },
+      {
+        "id": "https://openalex.org/W4391962124",
+        "title": "Enhancing detection of topological order by local error correction",
+        "abstract": "",
+        "publication_year": 2024,
+        "citation_count": 9
+      },
+      {
+        "id": "https://openalex.org/W4391800377",
+        "title": "Hilbert-Space Ergodicity in Driven Quantum Systems: Obstructions and\n  Designs",
+        "abstract": "Despite its long history, a canonical formulation of quantum ergodicity that applies to general classes of quantum dynamics, including driven systems, has not been fully established. Here we introduce and study a notion of quantum ergodicity for closed systems with time-dependent Hamiltonians, defined as statistical randomness exhibited in their long-time dynamics. Concretely, we consider the temporal ensemble of quantum states (time-evolution operators) generated by the evolution, and investigate the conditions necessary for them to be statistically indistinguishable from uniformly random states (operators) in the Hilbert space (space of unitaries). We find that the number of driving frequencies underlying the Hamiltonian needs to be sufficiently large for this to occur. Conversely, we show that statistical pseudo-randomness -- indistinguishability up to some large but finite moment, can already be achieved by a quantum system driven with a single frequency, i.e., a Floquet system, as long as the driving period is sufficiently long. Our work relates the complexity of a time-dependent Hamiltonian and that of the resulting quantum dynamics, and offers a fresh perspective to the established topics of quantum ergodicity and chaos from the lens of quantum information.",
+        "publication_year": 2024,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4389991481",
+        "title": "Complete Hilbert-Space Ergodicity in Quantum Dynamics of Generalized Fibonacci Drives",
+        "abstract": "Ergodicity of quantum dynamics is often defined through statistical properties of energy eigenstates, as exemplified by Berry's conjecture in single-particle quantum chaos and the eigenstate thermalization hypothesis in many-body settings. In this work, we investigate whether quantum systems can exhibit a stronger form of ergodicity, wherein any time-evolved state uniformly visits the entire Hilbert space over time. We call such a phenomenon complete Hilbert-space ergodicity (CHSE), which is more akin to the intuitive notion of ergodicity as an inherently dynamical concept. CHSE cannot hold for time-independent or even time-periodic Hamiltonian dynamics, owing to the existence of (quasi)energy eigenstates which precludes exploration of the full Hilbert space. However, we find that there exists a family of aperiodic, yet deterministic drives with minimal symbolic complexity---generated by the Fibonacci word and its generalizations---for which CHSE can be proven to occur. Our results provide a basis for understanding thermalization in general time-dependent quantum systems.",
+        "publication_year": 2023,
+        "citation_count": 18
+      },
+      {
+        "id": "https://openalex.org/W4386636893",
+        "title": "Benchmarking Quantum Simulators Using Ergodic Quantum Dynamics",
+        "abstract": "We propose and analyze a sample-efficient protocol to estimate the fidelity between an experimentally prepared state and an ideal target state, applicable to a wide class of analog quantum simulators without advanced spatiotemporal control. Our protocol relies on universal fluctuations emerging from generic Hamiltonian dynamics, which we discover in the present work. It does not require fine-tuned control over state preparation, quantum evolution, or readout capability, while achieving near optimal sample complexity: a percent-level precision is obtained with $\\ensuremath{\\sim}{10}^{3}$ measurements, independent of system size. Furthermore, the accuracy of our fidelity estimation improves exponentially with increasing system size. We numerically demonstrate our protocol in a variety of quantum simulator platforms, including quantum gas microscopes, trapped ions, and Rydberg atom arrays. We discuss applications of our method for tasks such as multiparameter estimation of quantum states and processes.",
+        "publication_year": 2023,
+        "citation_count": 22
+      },
+      {
+        "id": "https://openalex.org/W4386074200",
+        "title": "Landau-Forbidden Quantum Criticality in Rydberg Quantum Simulators",
+        "abstract": "The Landau-Ginzburg-Wilson theory of phase transitions precludes a continuous transition between two phases that spontaneously break distinct symmetries. However, quantum mechanical effects can intertwine the symmetries, giving rise to an exotic phenomenon called deconfined quantum criticality (DQC). In this Letter, we study the ground state phase diagram of a one-dimensional array of individually trapped neutral atoms interacting strongly via Rydberg states, and demonstrate through extensive numerical simulations that it hosts a variety of symmetry-breaking phases and their transitions including DQC. We show how an enlarged, emergent continuous symmetry arises at the DQCs, which can be experimentally observed in the joint distribution of two distinct order parameters, obtained within measurement snapshots in the standard computational basis. Our findings highlight quantum simulators of Rydberg atoms not only as promising platforms to experimentally realize such exotic phenomena, but also as unique ones allowing access to physical properties not obtainable in traditional experiments.",
+        "publication_year": 2023,
+        "citation_count": 22
+      },
+      {
+        "id": "https://openalex.org/W4382520353",
+        "title": "Improving metrology with quantum scrambling",
+        "abstract": "Quantum scrambling describes the spreading of local information into many degrees of freedom in quantum systems. This provides the conceptual connection among diverse phenomena ranging from thermalizing quantum dynamics to models of black holes. Here we experimentally probe the exponential scrambling of a multi-particle system near a bistable point in phase space and utilize it for entanglement-enhanced metrology. We use a time-reversal protocol to observe a simultaneous exponential growth of both the metrological gain and the out-of-time-order correlator, thereby experimentally verifying the relation between quantum metrology and quantum information scrambling. Our experiments demonstrate that fast-scrambling dynamics capable of exponentially fast entanglement generation are useful for practical metrology, resulting in 6.8(4) dB gain beyond the Standard Quantum Limit.",
+        "publication_year": 2023,
+        "citation_count": 54
+      }
+    ]
+  },
+  {
+    "name": "J. J. Sakurai",
+    "id": "https://openalex.org/A5111773958",
+    "institution": null,
+    "score": 0.0,
+    "is_conflict": false,
+    "works": [
+      {
+        "id": "https://openalex.org/W1500256440",
+        "title": "Modern Quantum Mechanics",
+        "abstract": "Modern Quantum Mechanics is a classic graduate level textbook, covering the main concepts from quantum mechanics in a clear, organized and engaging manner. The original author, J. J. Sakurai, was a renowned particle theorist. This third edition, revised by Jim Napolitano, introduces topics that extend its value into the twenty-first century, such as modern mathematical techniques for advanced quantum mechanical calculations, while at the same time retaining fundamental topics such as neutron interferometer experiments, Feynman path integrals, correlation measurements, and Bell's inequalities. A solutions manual is available.",
+        "publication_year": 2020,
+        "citation_count": 3801
+      },
+      {
+        "id": "https://openalex.org/W4238114711",
+        "title": "Theory of Angular Momentum",
+        "abstract": "Modern Quantum Mechanics is a classic graduate level textbook, covering the main concepts from quantum mechanics in a clear, organized and engaging manner. The original author, J. J. Sakurai, was a renowned particle theorist. This third edition, revised by Jim Napolitano, introduces topics that extend its value into the twenty-first century, such as modern mathematical techniques for advanced quantum mechanical calculations, while at the same time retaining fundamental topics such as neutron interferometer experiments, Feynman path integrals, correlation measurements, and Bell's inequalities. A solutions manual is available.",
+        "publication_year": 2020,
+        "citation_count": 18
+      },
+      {
+        "id": "https://openalex.org/W4248106093",
+        "title": "Electromagnetic Units",
+        "abstract": "Modern Quantum Mechanics is a classic graduate level textbook, covering the main concepts from quantum mechanics in a clear, organized and engaging manner. The original author, J. J. Sakurai, was a renowned particle theorist. This third edition, revised by Jim Napolitano, introduces topics that extend its value into the twenty-first century, such as modern mathematical techniques for advanced quantum mechanical calculations, while at the same time retaining fundamental topics such as neutron interferometer experiments, Feynman path integrals, correlation measurements, and Bell's inequalities. A solutions manual is available.",
+        "publication_year": 2020,
+        "citation_count": 3
+      },
+      {
+        "id": "https://openalex.org/W4230891505",
+        "title": "Symmetry in Quantum Mechanics",
+        "abstract": "Modern Quantum Mechanics is a classic graduate level textbook, covering the main concepts from quantum mechanics in a clear, organized and engaging manner. The original author, J. J. Sakurai, was a renowned particle theorist. This third edition, revised by Jim Napolitano, introduces topics that extend its value into the twenty-first century, such as modern mathematical techniques for advanced quantum mechanical calculations, while at the same time retaining fundamental topics such as neutron interferometer experiments, Feynman path integrals, correlation measurements, and Bell's inequalities. A solutions manual is available.",
+        "publication_year": 2020,
+        "citation_count": 1
+      },
+      {
+        "id": "https://openalex.org/W4230950143",
+        "title": "Bibliography",
+        "abstract": "Modern Quantum Mechanics is a classic graduate level textbook, covering the main concepts from quantum mechanics in a clear, organized and engaging manner. The original author, J. J. Sakurai, was a renowned particle theorist. This third edition, revised by Jim Napolitano, introduces topics that extend its value into the twenty-first century, such as modern mathematical techniques for advanced quantum mechanical calculations, while at the same time retaining fundamental topics such as neutron interferometer experiments, Feynman path integrals, correlation measurements, and Bell's inequalities. A solutions manual is available.",
+        "publication_year": 2020,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4241376547",
+        "title": "Finding Clebsch–Gordan Coefficients",
+        "abstract": "Modern Quantum Mechanics is a classic graduate level textbook, covering the main concepts from quantum mechanics in a clear, organized and engaging manner. The original author, J. J. Sakurai, was a renowned particle theorist. This third edition, revised by Jim Napolitano, introduces topics that extend its value into the twenty-first century, such as modern mathematical techniques for advanced quantum mechanical calculations, while at the same time retaining fundamental topics such as neutron interferometer experiments, Feynman path integrals, correlation measurements, and Bell's inequalities. A solutions manual is available.",
+        "publication_year": 2020,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4248804194",
+        "title": "Approximation Methods",
+        "abstract": "Modern Quantum Mechanics is a classic graduate level textbook, covering the main concepts from quantum mechanics in a clear, organized and engaging manner. The original author, J. J. Sakurai, was a renowned particle theorist. This third edition, revised by Jim Napolitano, introduces topics that extend its value into the twenty-first century, such as modern mathematical techniques for advanced quantum mechanical calculations, while at the same time retaining fundamental topics such as neutron interferometer experiments, Feynman path integrals, correlation measurements, and Bell's inequalities. A solutions manual is available.",
+        "publication_year": 2020,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4256187386",
+        "title": "Notes on Complex Variables",
+        "abstract": "Modern Quantum Mechanics is a classic graduate level textbook, covering the main concepts from quantum mechanics in a clear, organized and engaging manner. The original author, J. J. Sakurai, was a renowned particle theorist. This third edition, revised by Jim Napolitano, introduces topics that extend its value into the twenty-first century, such as modern mathematical techniques for advanced quantum mechanical calculations, while at the same time retaining fundamental topics such as neutron interferometer experiments, Feynman path integrals, correlation measurements, and Bell's inequalities. A solutions manual is available.",
+        "publication_year": 2020,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4245561520",
+        "title": "Scattering Theory",
+        "abstract": "Modern Quantum Mechanics is a classic graduate level textbook, covering the main concepts from quantum mechanics in a clear, organized and engaging manner. The original author, J. J. Sakurai, was a renowned particle theorist. This third edition, revised by Jim Napolitano, introduces topics that extend its value into the twenty-first century, such as modern mathematical techniques for advanced quantum mechanical calculations, while at the same time retaining fundamental topics such as neutron interferometer experiments, Feynman path integrals, correlation measurements, and Bell's inequalities. A solutions manual is available.",
+        "publication_year": 2020,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4248734352",
+        "title": "Hamiltonian for a Charge in an Electromagnetic Field",
+        "abstract": "Modern Quantum Mechanics is a classic graduate level textbook, covering the main concepts from quantum mechanics in a clear, organized and engaging manner. The original author, J. J. Sakurai, was a renowned particle theorist. This third edition, revised by Jim Napolitano, introduces topics that extend its value into the twenty-first century, such as modern mathematical techniques for advanced quantum mechanical calculations, while at the same time retaining fundamental topics such as neutron interferometer experiments, Feynman path integrals, correlation measurements, and Bell's inequalities. A solutions manual is available.",
+        "publication_year": 2020,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4250144292",
+        "title": "Identical Particles",
+        "abstract": "Modern Quantum Mechanics is a classic graduate level textbook, covering the main concepts from quantum mechanics in a clear, organized and engaging manner. The original author, J. J. Sakurai, was a renowned particle theorist. This third edition, revised by Jim Napolitano, introduces topics that extend its value into the twenty-first century, such as modern mathematical techniques for advanced quantum mechanical calculations, while at the same time retaining fundamental topics such as neutron interferometer experiments, Feynman path integrals, correlation measurements, and Bell's inequalities. A solutions manual is available.",
+        "publication_year": 2020,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W4247706215",
+        "title": "Fundamental Concepts",
+        "abstract": "Modern Quantum Mechanics is a classic graduate level textbook, covering the main concepts from quantum mechanics in a clear, organized and engaging manner. The original author, J. J. Sakurai, was a renowned particle theorist. This third edition, revised by Jim Napolitano, introduces topics that extend its value into the twenty-first century, such as modern mathematical techniques for advanced quantum mechanical calculations, while at the same time retaining fundamental topics such as neutron interferometer experiments, Feynman path integrals, correlation measurements, and Bell's inequalities. A solutions manual is available.",
+        "publication_year": 2020,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W3159724457",
+        "title": "Theory of Angular Momentum",
+        "abstract": "Modern Quantum Mechanics is a classic graduate level textbook, covering the main quantum mechanics concepts in a clear, organized and engaging manner. The author, Jun John Sakurai, was a renowned theorist in particle theory. The second edition, revised by Jim Napolitano, introduces topics that extend the text's usefulness into the twenty-first century, such as advanced mathematical techniques associated with quantum mechanical calculations, while at the same time retaining classic developments such as neutron interferometer experiments, Feynman path integrals, correlation measurements, and Bell's inequality. A solution manual for instructors using this textbook can be downloaded from www.cambridge.org/9781108422413.",
+        "publication_year": 2018,
+        "citation_count": 19
+      },
+      {
+        "id": "https://openalex.org/W4210418085",
+        "title": "Relativistic Quantum Mechanics",
+        "abstract": "Modern Quantum Mechanics is a classic graduate level textbook, covering the main quantum mechanics concepts in a clear, organized and engaging manner. The author, Jun John Sakurai, was a renowned theorist in particle theory. The second edition, revised by Jim Napolitano, introduces topics that extend the text's usefulness into the twenty-first century, such as advanced mathematical techniques associated with quantum mechanical calculations, while at the same time retaining classic developments such as neutron interferometer experiments, Feynman path integrals, correlation measurements, and Bell's inequality. A solution manual for instructors using this textbook can be downloaded from www.cambridge.org/9781108422413.",
+        "publication_year": 2018,
+        "citation_count": 0
+      },
+      {
+        "id": "https://openalex.org/W3004333419",
+        "title": "Modern Quantum Mechanics",
+        "abstract": "Modern Quantum Mechanics is a classic graduate level textbook, covering the main quantum mechanics concepts in a clear, organized and engaging manner. The author, Jun John Sakurai, was a renowned theorist in particle theory. The second edition, revised by Jim Napolitano, introduces topics that extend the text's usefulness into the twenty-first century, such as advanced mathematical techniques associated with quantum mechanical calculations, while at the same time retaining classic developments such as neutron interferometer experiments, Feynman path integrals, correlation measurements, and Bell's inequality. A solution manual for instructors using this textbook can be downloaded from www.cambridge.org/9781108422413.",
+        "publication_year": 2017,
+        "citation_count": 1641
+      }
+    ]
+  }
+]
