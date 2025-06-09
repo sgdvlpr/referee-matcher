@@ -582,33 +582,6 @@ class RefereeMatcher:
     def is_conflict(self, candidate_referee_id: str) -> bool:
         return candidate_referee_id in self.CONFLICT_IDS
 
-    async def get_author_works(self, author_id, max_works=20):
-        url = f"{self.base_url}/works"
-        params = {
-            "filter": f"author.id:{author_id}",
-            "per-page": max_works,
-            "sort": "cited_by_count:desc"
-        }
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.get(url, params=params)
-            resp.raise_for_status()
-            data = resp.json()
-            works = []
-            for work in data.get("results", []):
-                abstract_index = work.get("abstract_inverted_index", None)
-                if abstract_index:
-                    abstract_text = self.abstract_index_to_text(abstract_index)
-                else:
-                    abstract_text = ""
-                works.append({
-                    "id": work["id"],
-                    "title": work.get("title", ""),
-                    "abstract": abstract_text,
-                    "publication_year": work.get("publication_year", None),
-                    "citation_count": work.get("cited_by_count", 0),
-                })
-            return works
-
     async def get_referee_details(self, author_id: str, max_works=20):
         # Run both requests concurrently
         author_data, works = await asyncio.gather(
