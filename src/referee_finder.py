@@ -256,7 +256,7 @@ class RefereeMatcher:
                 })
         return extracted_topics
 
-    async def get_top_works_for_topic(self, topic_id: str, top_n: int = 3, from_year: int = 2016, min_citations: int = 20):
+    async def get_top_works_for_topic(self, topic_id: str, top_n: int = 7, from_year: int = 2016, min_citations: int = 20):
         """
         Async version: Fetch top works under a given topic ID.
         """
@@ -325,7 +325,7 @@ class RefereeMatcher:
             return top_works
 
     # Should return unique works - currently it doesn't
-    async def fetch_all_topic_works(client, topics_data, top_n_works=3):
+    async def fetch_all_topic_works(client, topics_data, top_n_works=7):
         """
         Concurrently fetch top works for a list of topics and return a flat list.
         """
@@ -362,37 +362,55 @@ class RefereeMatcher:
     async def sort_works_by_relevance(self, works: list[dict], abstract: str) -> list[dict]:
         """
         Scores a list of works based on their relevance to the given abstract using an LLM.
-        Returns the same list, but each work now includes a `relevance_score` (0 to 10).
+        Sends only minimal fields: abstract (or title if abstract is missing) + URL for mapping.
+        Reattaches full original metadata after scoring.
         """
+        # Step 1: Build lookup table and minimal input
+        id_to_work = {work["url"]: work for work in works}
+        minimal_works = []
+        for work in works:
+            minimal_works.append({
+                "url": work["url"],
+                "abstract": work.get("abstract", ""),
+                "title": work.get("title", "")
+            })
+
+        # Step 2: Prompt
         prompt = f"""
-            You are an expert research assistant.
+        You are an expert research assistant.
 
-            You are given the abstract of a submitted paper. Your task is to score the **relevance** of a list of prior works to this paper. Relevance should be scored on a scale from **0 (not relevant)** to **10 (highly relevant)**.
+        You are given the abstract of a submitted paper. Your task is to score the **relevance** of a list of prior works to this paper. Relevance should be scored on a scale from **0 (not relevant)** to **10 (highly relevant)**.
 
-            For each work, you are given:
-            - Title (always present)
-            - Abstract (may be empty)
-            - Other metadata (for context, ignore in scoring)
+        For each work, you are given:
+        - Abstract (may be empty)
+        - Title 
+        - URL (for identification)
 
-            ### Abstract of the submitted paper:
-            \"\"\"
-            {abstract}
-            \"\"\"
+        ### Abstract of the submitted paper:
+        \"\"\"{abstract}\"\"\"
 
-            ### Instructions:
-            1. Read both the title and abstract of each work (use abstract if present, otherwise rely on title).
-            2. Compare the content to the submitted abstract.
-            3. Score each work with a relevance_score from 0.0 to 10.0, allowing one decimal point of precision (e.g., 7.3, 9.6).
+        ### Instructions:
+        1. Use the abstract if present, otherwise use the title.
+        2. Score each work with a relevance_score from 0.0 to 10.0 (e.g., 7.3, 9.6).
+        3. Keep the original fields (abstract, title, url) and **add** a `relevance_score`.
 
-            Return the list in **JSON format**, sorting the list from most to least relevant, preserving all original fields and adding a new field `relevance_score` to each. Do not change the order or remove any information.
+        Return a JSON array, **sorted from most to least relevant**.
 
-            ### Works to Score:
-            {json.dumps(works, indent=4)}
-                    """
+        ### Works to Score:
+        {json.dumps(minimal_works, indent=2)}
+        """
 
         raw_output = await self.query_llm(prompt)
         response = self.extract_json_array(raw_output)
-        return json.loads(response)
+        scored_minimal = json.loads(response)
+
+        # Step 3: Reattach full metadata with scores
+        enriched = []
+        for scored in scored_minimal:
+            original = id_to_work.get(scored["url"], {})
+            enriched.append({**original, "relevance_score": scored.get("relevance_score", 0)})
+
+        return enriched
 
     async def get_top_referees(self, works: list[dict]) -> list[dict]:
         """
@@ -684,23 +702,18 @@ async def main():
     topic_id = "https://openalex.org/T10321"
 
     topics_data = [
-    {"topic_id": "https://openalex.org/T10622", "topic_name": "Quantum Mechanics and Applications"},
-    {"topic_id": "https://openalex.org/T11804", "topic_name": "Quantum many-body systems"},
-    {"topic_id": "https://openalex.org/T10275", "topic_name": "2D Materials and Applications"},
-    # ... possibly more, but we want just the top 3
-]
+        {"topic_id": "https://openalex.org/T10622", "topic_name": "Quantum Mechanics and Applications"},
+        {"topic_id": "https://openalex.org/T11804", "topic_name": "Quantum many-body systems"},
+        {"topic_id": "https://openalex.org/T10275", "topic_name": "2D Materials and Applications"},
+        # ... possibly more, but we want just the top 3
+    ]
     
-    # all_top_works = await matcher.fetch_all_topic_works(topics_data)
-    # pruned_works = matcher.prune_works_for_scoring(all_top_works)
-    # pprint(pruned_works, indent=4, width=100)
+    all_top_works = await matcher.fetch_all_topic_works(topics_data)
 
-    # sorted_works = await matcher.sort_works_by_relevance(all_top_works, abstract13)
-    # # Save to a file
-    # with open("sorted_works.json", "w", encoding="utf-8") as f:
-    #     json.dump(sorted_works, f, ensure_ascii=False, indent=2)
-
-    matching_fields = await matcher.get_best_matching_fields(abstract11)
-    pprint(matching_fields, width=100, indent=3)
+    sorted_works = await matcher.sort_works_by_relevance(all_top_works, abstract13)
+    # Save to a file
+    with open("sorted_works4.json", "w", encoding="utf-8") as f:
+        json.dump(sorted_works, f, ensure_ascii=False, indent=2)
 
 # Run main
 asyncio.run(main())
