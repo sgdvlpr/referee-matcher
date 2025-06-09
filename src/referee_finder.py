@@ -87,46 +87,62 @@ class RefereeMatcher:
 
     async def get_best_matching_fields(self, abstract: str) -> Dict:
         """
-        Use LLM to find the most relevant field from OpenAlex metadata based on the abstract.
+        Use LLM to find the most relevant subfields from OpenAlex metadata based on the abstract.
+        Returns a list of dicts with subfield name, ID, and reason.
         """
-        with open(self.subfields, "r", encoding="utf-8") as f:      
-            subfields = json.load(f)
+        with open(self.subfields, "r", encoding="utf-8") as f:
+            subfields_data = json.load(f)
+
+        # Minify for prompt
+        subfield_names = [entry["subf_name"] for entry in subfields_data]
 
         prompt = f"""
-            You are a research field classification expert. Your task is to analyze scientific abstracts and determine the **most appropriate academic subfield** for each one. You will be given:
-            - A list of candidate subfields (with their names and OpenAlex IDs),
-            - A research abstract.
+        You are a research field classification expert. Your task is to analyze scientific abstracts and determine the **most appropriate academic subfields** for each one.
 
-            Your goal is to select the **three most relevant subfields** based on the abstract’s core contribution, scientific context, and application area. Avoid choosing subfields just because of repeated keywords. Instead, focus on the **purpose of the research**, the **domain it contributes to**, and **who would most likely read or cite the paper**.
+        You will be given:
+        - A list of candidate subfield names
+        - A research abstract
 
-            Respond only with a JSON array of three objects, each in this format:
-            {{
-                "selected_subfield_name": "Subfield Name",
-                "selected_subfield_id": "https://openalex.org/subfields/xxxx",
-                "reason": "A short explanation for why this subfield is the best match."
-            }}
+        Your goal is to select the **three most relevant subfields** based on the abstract’s core contribution, scientific context, and application area.
 
-            Abstract:
-            \"\"\"
-            {abstract}
-            \"\"\"
+        Respond only with a JSON array of three objects in this format:
+        {{
+            "selected_subfield_name": "Subfield Name",
+            "reason": "A short explanation for why this subfield is the best match."
+        }}
 
-            Candidate subfields:
-            {subfields}
-            """
+        Abstract:
+        \"\"\"
+        {abstract}
+        \"\"\"
+
+        Candidate subfields:
+        {json.dumps(subfield_names, indent=2)}
+        """
 
         answer = await self.query_llm(prompt)
         clean_answer = self.extract_json_array(answer)
 
         try:
-            selected_subfields = json.loads(clean_answer)
+            selected = json.loads(clean_answer)
         except json.JSONDecodeError as e:
             print("Error parsing JSON:", e)
             print("Cleaned text was:", repr(clean_answer))
-            selected_subfields = []
+            return []
 
-        return selected_subfields
-    
+        # Add back the subfield IDs from original file
+        name_to_id = {entry["subf_name"]: entry["subf_id"] for entry in subfields_data}
+        enriched = []
+        for item in selected:
+            name = item.get("selected_subfield_name")
+            enriched.append({
+                "selected_subfield_name": name,
+                "selected_subfield_id": name_to_id.get(name, ""),
+                "reason": item.get("reason", "")
+            })
+
+        return enriched
+
     async def get_topics_for_selected_subfields(self, top_subfields: list) -> Dict[str, List[Dict[str, str]]]:
         """
         Given a JSON string with selected subfields, find and return their topics from the OpenAlex metadata file.
@@ -240,7 +256,7 @@ class RefereeMatcher:
                 })
         return extracted_topics
 
-    async def get_top_works_for_topic(self, topic_id: str, top_n: int = 2, from_year: int = 2016, min_citations: int = 20):
+    async def get_top_works_for_topic(self, topic_id: str, top_n: int = 3, from_year: int = 2016, min_citations: int = 20):
         """
         Async version: Fetch top works under a given topic ID.
         """
@@ -309,7 +325,7 @@ class RefereeMatcher:
             return top_works
 
     # Should return unique works - currently it doesn't
-    async def fetch_all_topic_works(client, topics_data, top_n_works=2):
+    async def fetch_all_topic_works(client, topics_data, top_n_works=3):
         """
         Concurrently fetch top works for a list of topics and return a flat list.
         """
@@ -326,6 +342,22 @@ class RefereeMatcher:
         flat_works = [work for sublist in all_works_nested for work in sublist]
 
         return flat_works
+
+    def prune_works_for_scoring(self, works: list[dict]) -> list[dict]:
+        """
+        Reduces works to only the fields needed for relevance scoring:
+        - title
+        - abstract
+        - url (from 'id')
+        """
+        return [
+            {
+                "title": work.get("title", ""),
+                "abstract": work.get("abstract", ""),
+                "url": work.get("id", "")
+            }
+            for work in works
+        ]
 
     async def sort_works_by_relevance(self, works: list[dict], abstract: str) -> list[dict]:
         """
@@ -350,7 +382,7 @@ class RefereeMatcher:
             ### Instructions:
             1. Read both the title and abstract of each work (use abstract if present, otherwise rely on title).
             2. Compare the content to the submitted abstract.
-            3. Score each work with a `relevance_score` from 0 to 10.
+            3. Score each work with a relevance_score from 0.0 to 10.0, allowing one decimal point of precision (e.g., 7.3, 9.6).
 
             Return the list in **JSON format**, sorting the list from most to least relevant, preserving all original fields and adding a new field `relevance_score` to each. Do not change the order or remove any information.
 
@@ -658,9 +690,17 @@ async def main():
     # ... possibly more, but we want just the top 3
 ]
     
-    all_top_works = await matcher.fetch_all_topic_works(topics_data)
-    sorted_works = await matcher.sort_works_by_relevance(all_top_works, abstract13)
-    print(json.dumps(sorted_works, indent=4, ensure_ascii=False))
+    # all_top_works = await matcher.fetch_all_topic_works(topics_data)
+    # pruned_works = matcher.prune_works_for_scoring(all_top_works)
+    # pprint(pruned_works, indent=4, width=100)
+
+    # sorted_works = await matcher.sort_works_by_relevance(all_top_works, abstract13)
+    # # Save to a file
+    # with open("sorted_works.json", "w", encoding="utf-8") as f:
+    #     json.dump(sorted_works, f, ensure_ascii=False, indent=2)
+
+    matching_fields = await matcher.get_best_matching_fields(abstract11)
+    pprint(matching_fields, width=100, indent=3)
 
 # Run main
 asyncio.run(main())
