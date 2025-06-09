@@ -256,7 +256,7 @@ class RefereeMatcher:
                 })
         return extracted_topics
 
-    async def get_top_works_for_topic(self, topic_id: str, top_n: int = 7, from_year: int = 2016, min_citations: int = 20):
+    async def get_top_works_for_topic(self, topic_id: str, top_n: int = 5, from_year: int = 2016, min_citations: int = 20):
         """
         Async version: Fetch top works under a given topic ID.
         """
@@ -324,8 +324,8 @@ class RefereeMatcher:
 
             return top_works
 
-    # Should return unique works - currently it doesn't
-    async def fetch_all_topic_works(client, topics_data, top_n_works=7):
+    # Should return unique works - currently it may not
+    async def fetch_all_topic_works(client, topics_data, top_n_works=5):
         """
         Concurrently fetch top works for a list of topics and return a flat list.
         """
@@ -560,9 +560,9 @@ class RefereeMatcher:
         
         results = {}
 
+        # Filter out submitting authors from coauthors
         def get_filtered_coauthors(author_id):
             author_id, coauthors = self.get_coauthors(author_id, max_pubs)
-            # Filter out submitting authors from coauthors
             filtered_coauthors = {}
             for co_id, info in coauthors.items():
                 if co_id not in self.AUTHOR_IDS:
@@ -581,17 +581,9 @@ class RefereeMatcher:
 
     def is_conflict(self, candidate_referee_id: str) -> bool:
         return candidate_referee_id in self.CONFLICT_IDS
- 
-    async def get_author_details(self, author_id):
-        author_id = author_id.rsplit("/", 1)[-1]
-        url = f"{OPENALEX_API_BASE}/authors/{author_id}"
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.get(url)
-            resp.raise_for_status()
-            return resp.json()
 
-    async def get_author_works(self, author_id, max_works=200):
-        url = f"{OPENALEX_API_BASE}/works"
+    async def get_author_works(self, author_id, max_works=20):
+        url = f"{self.base_url}/works"
         params = {
             "filter": f"author.id:{author_id}",
             "per-page": max_works,
@@ -617,18 +609,12 @@ class RefereeMatcher:
                 })
             return works
 
-    async def get_referee_details(self, author_id: str, max_works=200):
+    async def get_referee_details(self, author_id: str, max_works=20):
         # Run both requests concurrently
         author_data, works = await asyncio.gather(
             self.get_author_details(author_id),
             self.get_author_works(author_id, max_works=max_works),
         )
-
-        #Get topic share dict for easy lookup
-        topic_share_map = {
-            topic["id"]: topic["value"]
-            for topic in author_data.get("topic_share", [])
-        }
 
         topics = []
         for topic in author_data.get("topics", []):
@@ -636,8 +622,7 @@ class RefereeMatcher:
             topics.append({
                 "id": tid,
                 "name": topic["display_name"],
-                "count": topic.get("count", 0),
-                "topic_share": topic_share_map.get(tid, 0.0),
+                "count": topic.get("count", 0)
             })
 
         last_known_institutions = author_data.get("last_known_institutions", [])
@@ -651,7 +636,6 @@ class RefereeMatcher:
             "name": author_data.get("display_name", ""),
             "summary_stats": author_data.get("summary_stats", {}),
             "last_known_institution": last_known_institution_name,
-            "topics": topics,
             "works": works,
         }
         return response
@@ -748,12 +732,16 @@ async def main():
         # ... possibly more, but we want just the top 3
     ]
     
-    all_top_works = await matcher.fetch_all_topic_works(topics_data)
+    # all_top_works = await matcher.fetch_all_topic_works(topics_data)
 
-    sorted_works = await matcher.sort_works_by_relevance(all_top_works, abstract13)
-    # Save to a file
-    with open("sorted_works.json", "w", encoding="utf-8") as f:
-        json.dump(sorted_works, f, ensure_ascii=False, indent=2)
+    # sorted_works = await matcher.sort_works_by_relevance(all_top_works, abstract13)
+    # top_refs = await matcher.get_top_referees(sorted_works)
+    # # Save to a file
+    # with open("top_refs.json", "w", encoding="utf-8") as f:
+    #     json.dump(top_refs, f, ensure_ascii=False, indent=2)
+
+    # author_info = await matcher.get_author_details(candidate_author_ids[0])
+    # pprint(author_info, width=100, indent=4)
 
 # Run main
 asyncio.run(main())
