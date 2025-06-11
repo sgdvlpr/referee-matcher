@@ -443,7 +443,7 @@ class RefereeMatcher:
                     abstract_text = self.abstract_index_to_text(abstract_index) if abstract_index else ""
 
                     new_filtered.append({
-                        "id": w["id"],
+                        "work_id": w["id"],
                         "title": w.get("title", ""),
                         "abstract": abstract_text,
                         "publication_year": year,
@@ -500,9 +500,8 @@ class RefereeMatcher:
                         )
                         return {
                             "name": ref.get("name"),
-                            "id": ref_id,
+                            "referee_id": ref_id,
                             "institution": ref.get("institution"),
-                            "score": 0.0,
                             "is_conflict": self.is_conflict(ref_id),
                             "works": recent_works,
                         }
@@ -652,9 +651,9 @@ class RefereeMatcher:
 
         Args:
             top_referees (List[Dict]): A list of dictionaries, where each dictionary represents a referee and contains:
-                - 'id' (str): The unique OpenAlex ID of the referee.
+                - 'referee_id' (str): The unique OpenAlex ID of the referee.
                 - 'works' (List[Dict]): A list of works authored by the referee, where each work dictionary may include:
-                    - 'id' (str): The OpenAlex ID of the work.
+                    - 'work_id' (str): The OpenAlex ID of the work.
                     - 'title' (str): The title of the work.
                     - 'abstract' (str): The abstract of the work.
 
@@ -663,11 +662,11 @@ class RefereeMatcher:
         """
         batched_works = []
         for referee in top_referees:
-            referee_id = referee['id']
+            referee_id = referee['referee_id']
             works = referee.get("works", [])
             work_list = [
                 {
-                    "id": work["id"],
+                    "work_id": work["work_id"],
                     "title": work.get("title", ""),
                     "abstract": work.get("abstract", "")
                 }
@@ -702,13 +701,13 @@ class RefereeMatcher:
 
             You are given the abstract of a submitted paper. Your task is to evaluate the **relevance** of a list of prior works authored by a candidate referee.
 
-            Each work has a title and an optional abstract, plus an id for identification. For each work:
+            Each work has a title and an optional abstract, plus a work_id for identification. For each work:
             - Use the abstract if present, otherwise use the title
             - Provide a `relevance_score` between 0.0 and 10.0 (e.g., 6.7, 9.3)
             - Provide a one-sentence `reason` explaining why the score was assigned
-            - Keep the original fields (abstract, title, id) and **add** a `relevance_score`.
+            - Keep the original fields (abstract, title, work_id) and **add** a `relevance_score`.
 
-            Return a JSON array of objects with keys: id, relevance_score, reason.
+            Return a JSON array of objects with keys: work_id, relevance_score, reason.
 
             ### Abstract of the submitted paper:
             \"\"\"{abstract}\"\"\"
@@ -727,7 +726,7 @@ class RefereeMatcher:
             score = scored.get("relevance_score", 0.0)
             if score < threshold:
                 rejected.append({
-                    "id": scored["id"],
+                    "work_id": scored["work_id"],
                     "relevance_score": score,
                     "reason": scored.get("reason", "No reason provided")
                 })
@@ -758,7 +757,7 @@ class RefereeMatcher:
                     {
                         "referee_id": "...",
                         "rejected_works": [
-                            {"url": ..., "relevance_score": ..., "reason": ...},
+                            {"id": ..., "relevance_score": ..., "reason": ...},
                             ...
                         ]
                     },
@@ -769,12 +768,12 @@ class RefereeMatcher:
 
         async def process(referee):
             async with semaphore:
-                return await self.filter_referee_works_by_relevance(referee, abstract, threshold)
+                return await self.reject_irrelevant_works_from_referee(referee, abstract, threshold)
 
         tasks = [process(referee) for referee in batched_works]
         results = await asyncio.gather(*tasks)
         return results
-    
+       
 async def main():
 
     candidate_author_ids = [
@@ -833,11 +832,18 @@ async def main():
     top_referees = await matcher.get_top_referees(sorted_works_by_relevance, from_year=2016, min_citations=10, max_citations=50)
     
     top_referee_works = matcher.extract_batched_works(top_referees)
-    referees_rej_works = await matcher.reject_irrelevant_works_from_referees(top_referee_works, abstract=abstract13)
+    rej_works = await matcher.reject_irrelevant_works_from_referees(top_referee_works, abstract=abstract13)
+    # updated_referees = matcher.apply_work_rejections(top_referees, rej_works)
 
     # # Save to a file
-    with open("referees_rej_works.json", "w", encoding="utf-8") as f:
-        json.dump(referees_rej_works, f, ensure_ascii=False, indent=2)
+    with open("top_referees_pre.json", "w", encoding="utf-8") as f:
+        json.dump(top_referees, f, ensure_ascii=False, indent=2)
+
+    with open("rejected_works.json", "w", encoding="utf-8") as f:
+        json.dump(rej_works, f, ensure_ascii=False, indent=2)
+
+    # with open("top_referees_post.json", "w", encoding="utf-8") as f:
+    #     json.dump(updated_referees, f, ensure_ascii=False, indent=2)
 
 # Run main
 asyncio.run(main())
