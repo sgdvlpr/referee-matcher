@@ -685,17 +685,17 @@ class RefereeMatcher:
 
         Args:
             referee (dict): A dictionary containing:
-            - referee_id (str): The OpenAlex ID of the referee.
-            - works (list of dict): List of works, each with 'id', 'title', and 'abstract' fields.
+                - referee_id (str): The OpenAlex ID of the referee.
+                - works (list of dict): List of works, each with 'work_id', 'title', and 'abstract' fields.
             abstract (str): The abstract of the submitted paper to compare against.
             threshold (float, optional): Relevance score threshold. Defaults to 6.5.
 
         Returns:
-            dict: A dictionary with referee_id as key and list of rejected works as values.
-                Each rejected work is a dict with 'id', 'relevance_score', and 'reason'.
+            dict: A dictionary with referee_id and a list of rejected_works.
+                Each rejected work includes 'work_id', 'relevance_score', and 'reason'.
         """
+        import json
 
-        # Compose prompt for the AI
         prompt = f"""
             You are an expert research assistant.
 
@@ -731,49 +731,35 @@ class RefereeMatcher:
                     "reason": scored.get("reason", "No reason provided")
                 })
 
-        print("Filtered batch works by relevance done")
-        return {referee["referee_id"]: rejected}
+        print(f"Filtered works by relevance for referee {referee['referee_id']}")
+        return {
+            "referee_id": referee["referee_id"],
+            "rejected_works": rejected
+        }
 
-    async def reject_irrelevant_works_from_referees(
-        self,
-        batched_works: List[Dict],
-        abstract: str,
-        threshold: float = 6.5,
-        max_concurrent_requests: int = 5
-    ) -> List[Dict]:
+    async def reject_irrelevant_works_from_referees(self, referees: List[dict], abstract: str, max_concurrent: int = 10) -> List[dict]:
         """
-        Runs `filter_referee_works_by_relevance` concurrently for a list of referees with OpenAI rate limiting.
+        Concurrently filters out irrelevant works from a list of referees based on the paper's abstract.
 
         Args:
-            batched_works (List[Dict]): List of referee entries from `extract_batched_works()`, 
-                each containing 'referee_id' and 'works'.
+            referees (List[dict]): List of referees with 'referee_id' and 'works'.
             abstract (str): The abstract of the submitted paper.
-            threshold (float): Works scoring below this threshold will be considered irrelevant.
-            max_concurrent_requests (int): Limits the number of concurrent API calls.
+            max_concurrent (int): Maximum number of concurrent LLM queries.
 
         Returns:
-            List[Dict]: A list of dictionaries containing rejected works for each referee:
-                [
-                    {
-                        "referee_id": "...",
-                        "rejected_works": [
-                            {"id": ..., "relevance_score": ..., "reason": ...},
-                            ...
-                        ]
-                    },
-                    ...
-                ]
+            List[dict]: List of dicts with keys 'referee_id' and 'rejected_works'.
         """
-        semaphore = Semaphore(max_concurrent_requests)
+        import asyncio
+        from asyncio import Semaphore
 
-        async def process(referee):
+        semaphore = Semaphore(max_concurrent)
+
+        async def process(ref):
             async with semaphore:
-                return await self.reject_irrelevant_works_from_referee(referee, abstract, threshold)
+                return await self.reject_irrelevant_works_from_referee(ref, abstract)
 
-        tasks = [process(referee) for referee in batched_works]
-        results = await asyncio.gather(*tasks)
-        return results
-       
+        return await asyncio.gather(*(process(r) for r in referees))
+    
 async def main():
 
     candidate_author_ids = [
