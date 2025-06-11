@@ -719,7 +719,10 @@ class RefereeMatcher:
         raw_output = await self.query_llm(prompt)
         response = self.extract_json_array(raw_output)
         scored_works = json.loads(response)
-
+        
+        print(f"scored_works for {referee['referee_id']}")
+        pprint(scored_works, width=100, indent=2)
+        
         # Filter works below threshold
         rejected = []
         for scored in scored_works:
@@ -760,6 +763,44 @@ class RefereeMatcher:
 
         return await asyncio.gather(*(process(r) for r in referees))
     
+    def apply_work_rejections(self, top_referees: list[dict], rejected_works: list[dict]) -> list[dict]:
+        """
+        Filters out works from top referees based on rejected work IDs. If a referee has no valid works left,
+        they are removed entirely.
+
+        Args:
+            top_referees (list[dict]): The original list of top referees, each with a 'works' field.
+            rejected_works (list[dict]): List of dicts where each dict includes:
+                - 'referee_id': str
+                - 'rejected_works': list of dicts with 'work_id', 'relevance_score', and 'reason'
+
+        Returns:
+            list[dict]: A cleaned list of referees with irrelevant works removed.
+        """
+        # Build a lookup map from referee_id to set of rejected work_ids
+        rejection_map = {
+            entry["referee_id"]: {work["work_id"] for work in entry["rejected_works"]}
+            for entry in rejected_works
+        }
+
+        updated_referees = []
+
+        for referee in top_referees:
+            referee_id = referee.get("referee_id")
+            original_works = referee.get("works", [])
+            rejected_ids = rejection_map.get(referee_id, set())
+
+            # Keep only works that weren't rejected
+            filtered_works = [work for work in original_works if work.get("work_id") not in rejected_ids]
+
+            if filtered_works:
+                updated_referees.append({
+                    **referee,
+                    "works": filtered_works  # overwrite works
+                })
+
+        return updated_referees
+
 async def main():
 
     candidate_author_ids = [
@@ -819,7 +860,7 @@ async def main():
     
     top_referee_works = matcher.extract_batched_works(top_referees)
     rej_works = await matcher.reject_irrelevant_works_from_referees(top_referee_works, abstract=abstract13)
-    # updated_referees = matcher.apply_work_rejections(top_referees, rej_works)
+    updated_referees = matcher.apply_work_rejections(top_referees, rej_works)
 
     # # Save to a file
     with open("top_referees_pre.json", "w", encoding="utf-8") as f:
@@ -828,8 +869,8 @@ async def main():
     with open("rejected_works.json", "w", encoding="utf-8") as f:
         json.dump(rej_works, f, ensure_ascii=False, indent=2)
 
-    # with open("top_referees_post.json", "w", encoding="utf-8") as f:
-    #     json.dump(updated_referees, f, ensure_ascii=False, indent=2)
+    with open("top_referees_post.json", "w", encoding="utf-8") as f:
+        json.dump(updated_referees, f, ensure_ascii=False, indent=2)
 
 # Run main
 asyncio.run(main())
