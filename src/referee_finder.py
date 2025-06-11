@@ -735,6 +735,46 @@ class RefereeMatcher:
         print("Filtered batch works by relevance done")
         return {referee["referee_id"]: rejected}
 
+    async def reject_irrelevant_works_from_referees(
+        self,
+        batched_works: List[Dict],
+        abstract: str,
+        threshold: float = 6.5,
+        max_concurrent_requests: int = 5
+    ) -> List[Dict]:
+        """
+        Runs `filter_referee_works_by_relevance` concurrently for a list of referees with OpenAI rate limiting.
+
+        Args:
+            batched_works (List[Dict]): List of referee entries from `extract_batched_works()`, 
+                each containing 'referee_id' and 'works'.
+            abstract (str): The abstract of the submitted paper.
+            threshold (float): Works scoring below this threshold will be considered irrelevant.
+            max_concurrent_requests (int): Limits the number of concurrent API calls.
+
+        Returns:
+            List[Dict]: A list of dictionaries containing rejected works for each referee:
+                [
+                    {
+                        "referee_id": "...",
+                        "rejected_works": [
+                            {"url": ..., "relevance_score": ..., "reason": ...},
+                            ...
+                        ]
+                    },
+                    ...
+                ]
+        """
+        semaphore = Semaphore(max_concurrent_requests)
+
+        async def process(referee):
+            async with semaphore:
+                return await self.filter_referee_works_by_relevance(referee, abstract, threshold)
+
+        tasks = [process(referee) for referee in batched_works]
+        results = await asyncio.gather(*tasks)
+        return results
+    
 async def main():
 
     candidate_author_ids = [
