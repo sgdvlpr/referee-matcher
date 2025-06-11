@@ -341,6 +341,7 @@ class RefereeMatcher:
         # Flatten the list of lists into a single list
         flat_works = [work for sublist in all_works_nested for work in sublist]
 
+        print("fetched all topics works")
         return flat_works
 
     async def sort_works_by_relevance(self, works: list[dict], abstract: str) -> list[dict]:
@@ -394,11 +395,12 @@ class RefereeMatcher:
             original = id_to_work.get(scored["url"], {})
             enriched.append({**original, "relevance_score": scored.get("relevance_score", 0)})
 
+        print("Sorted works by relevance")
         return enriched
 
-    async def fetch_recent_filtered_works(
+    async def fetch_recent_referee_works(
         self,
-        author_id: str,
+        referee_id: str,
         from_year: int = None,
         min_citations: int = 0,
         max_citations: int = 1_000_000
@@ -409,12 +411,12 @@ class RefereeMatcher:
         """
         url = f"{self.base_url}/works"
         cursor = "*"
-        all_filtered_works = []
+        all_recent_works = []
 
         async with httpx.AsyncClient(timeout=10.0) as client:
             while True:
                 params = {
-                    "filter": f"author.id:{author_id}",
+                    "filter": f"author.id:{referee_id}",
                     "sort": "publication_year:desc,cited_by_count:desc",
                     "per-page": 50,
                     "cursor": cursor,
@@ -431,7 +433,7 @@ class RefereeMatcher:
 
                     # Stop condition: year too old
                     if from_year and year and year < from_year:
-                        return all_filtered_works
+                        return all_recent_works
 
                     if citations < min_citations or citations > max_citations:
                         continue
@@ -445,16 +447,17 @@ class RefereeMatcher:
                         "abstract": abstract_text,
                         "publication_year": year,
                         "citation_count": citations,
+                        "counts_by_year": w.get("counts_by_year", [])
                     })
 
-                all_filtered_works.extend(new_filtered)
+                all_recent_works.extend(new_filtered)
 
                 next_cursor = data.get("meta", {}).get("next_cursor")
                 if not next_cursor or not data.get("results"):
                     break
                 cursor = next_cursor
 
-        return all_filtered_works
+        return all_recent_works
 
     async def get_top_referees(
         self,
@@ -462,6 +465,7 @@ class RefereeMatcher:
         from_year: int = None,
         min_citations: int = 0,
         max_citations: int = None,
+        concurrency_limit: int = 5,  # You can adjust this based on reliability
     ) -> list[dict]:
         """
         Extract unique top referees from a list of works, along with their recent works.
@@ -469,14 +473,14 @@ class RefereeMatcher:
         """
         await self.set_conflict_ids()
 
-        top_referees = []
         seen_ids = set()
+        tasks = []
+        semaphore = asyncio.Semaphore(concurrency_limit)
 
         for work in works:
             referee = work.get("top_referee", {})
             referee_id = referee.get("id")
 
-            # Exclude if referee is a submitting author or already seen or in conflict
             if (
                 referee_id
                 and referee_id not in seen_ids
@@ -484,23 +488,27 @@ class RefereeMatcher:
             ):
                 seen_ids.add(referee_id)
 
-                # Fetch recent filtered works for this referee
-                works = await self.fetch_recent_filtered_works(
-                    author_id=referee_id,
-                    from_year=from_year,
-                    min_citations=min_citations,
-                    max_citations=max_citations,
-                )
+                async def fetch_with_limit(ref=referee):
+                    async with semaphore:
+                        ref_id = ref["id"]
+                        recent_works = await self.fetch_recent_referee_works(
+                            referee_id=ref_id,
+                            from_year=from_year,
+                            min_citations=min_citations,
+                            max_citations=max_citations,
+                        )
+                        return {
+                            "name": ref.get("name"),
+                            "id": ref_id,
+                            "institution": ref.get("institution"),
+                            "score": 0.0,
+                            "is_conflict": self.is_conflict(ref_id),
+                            "works": recent_works,
+                        }
 
-                top_referees.append({
-                    "name": referee.get("name"),
-                    "id": referee_id,
-                    "institution": referee.get("institution"),
-                    "score": 0.0,
-                    "is_conflict": self.is_conflict(referee_id),
-                    "works": works
-                })
+                tasks.append(fetch_with_limit())
 
+        top_referees = await asyncio.gather(*tasks)
         return top_referees
 
     def get_coauthors(self, author_id: str, max_pubs=500) -> tuple[str, dict]:
@@ -631,7 +639,45 @@ class RefereeMatcher:
         cleaned = re.sub(r'\s+', ' ', cleaned).strip()
 
         return cleaned
-        
+    
+    def extract_batched_works(self, top_referees: List[Dict]) -> Dict[str, List[Dict]]:
+        """
+        Extracts and organizes recent works from a list of top referees into a batched dictionary format.
+
+        This function prepares the input needed for AI-assisted work relevance scoring by 
+        creating a mapping from referee IDs to a list of their associated works, 
+        where each work is represented by its ID, title, and abstract.
+
+        Args:
+            top_referees (List[Dict]): A list of dictionaries, where each dictionary represents a referee and contains:
+                - 'id' (str): The unique OpenAlex ID of the referee.
+                - 'works' (List[Dict]): A list of works authored by the referee, where each work dictionary may include:
+                    - 'id' (str): The OpenAlex ID of the work.
+                    - 'title' (str): The title of the work.
+                    - 'abstract' (str): The abstract of the work.
+
+        Returns:
+            Dict[str, List[Dict]]: A dictionary where:
+                - Each key is a referee's ID (str).
+                - Each value is a list of dictionaries representing the referee's works, each containing:
+                    - 'id' (str): Work ID.
+                    - 'title' (str): Work title (empty string if not available).
+                    - 'abstract' (str): Work abstract (empty string if not available).
+        """
+        batched_works = []
+        for referee in top_referees:
+            referee_id = referee['id']
+            works = referee.get("works", [])
+            batched_works[referee_id] = [
+                {
+                    "id": work["id"],
+                    "title": work.get("title", ""),
+                    "abstract": work.get("abstract", "")
+                }
+                for work in works
+            ]
+        return batched_works
+
 async def main():
 
     candidate_author_ids = [
@@ -686,12 +732,13 @@ async def main():
     
     all_top_works = await matcher.fetch_all_topic_works(topics_data)
 
-    sorted_works = await matcher.sort_works_by_relevance(all_top_works, abstract13)
-    top_refs = await matcher.get_top_referees(sorted_works, from_year=2016, min_citations=10, max_citations=50)
+    # sorted_works_by_relevance = await matcher.sort_works_by_relevance(all_top_works, abstract13)
+    # top_referees = await matcher.get_top_referees(sorted_works_by_relevance, from_year=2016, min_citations=10, max_citations=50)
     
-    # Save to a file
-    with open("top_refs.json", "w", encoding="utf-8") as f:
-        json.dump(top_refs, f, ensure_ascii=False, indent=2)
+    # extracted_works = matcher.extract_batched_works(top_referees)
+    # # Save to a file
+    with open("all_top_works.json", "w", encoding="utf-8") as f:
+        json.dump(all_top_works, f, ensure_ascii=False, indent=2)
 
 # Run main
 asyncio.run(main())
