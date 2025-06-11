@@ -7,6 +7,7 @@ from pprint import pprint
 import re
 from typing import List, Dict, Optional
 from pathlib import Path
+from asyncio import Semaphore
 
 LIARA_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiI2ODQ0NGNjYmMyODAzYzlkYmI0ZTQ3MTIiLCJ0eXBlIjoiYXV0aCIsImlhdCI6MTc0OTMwNzAwMH0.4xuTmA2p0onfvGHo8XlwV4vIjlcE7REMVre0luU-2yU'
 
@@ -509,6 +510,7 @@ class RefereeMatcher:
                 tasks.append(fetch_with_limit())
 
         top_referees = await asyncio.gather(*tasks)
+        print("Top referees received")
         return top_referees
 
     def get_coauthors(self, author_id: str, max_pubs=500) -> tuple[str, dict]:
@@ -676,6 +678,62 @@ class RefereeMatcher:
                 "works": work_list
             })
         return batched_works
+    
+    async def reject_irrelevant_works_from_referee(self, referee: dict, abstract: str, threshold: float = 6.5) -> dict:
+        """
+        Uses an AI model to evaluate and score the relevance of a referee's works to a given abstract.
+        Filters and returns the works that score below a specified relevance threshold.
+
+        Args:
+            referee (dict): A dictionary containing:
+            - referee_id (str): The OpenAlex ID of the referee.
+            - works (list of dict): List of works, each with 'id', 'title', and 'abstract' fields.
+            abstract (str): The abstract of the submitted paper to compare against.
+            threshold (float, optional): Relevance score threshold. Defaults to 6.5.
+
+        Returns:
+            dict: A dictionary with referee_id as key and list of rejected works as values.
+                Each rejected work is a dict with 'id', 'relevance_score', and 'reason'.
+        """
+
+        # Compose prompt for the AI
+        prompt = f"""
+            You are an expert research assistant.
+
+            You are given the abstract of a submitted paper. Your task is to evaluate the **relevance** of a list of prior works authored by a candidate referee.
+
+            Each work has a title and an optional abstract, plus an id for identification. For each work:
+            - Use the abstract if present, otherwise use the title
+            - Provide a `relevance_score` between 0.0 and 10.0 (e.g., 6.7, 9.3)
+            - Provide a one-sentence `reason` explaining why the score was assigned
+            - Keep the original fields (abstract, title, id) and **add** a `relevance_score`.
+
+            Return a JSON array of objects with keys: id, relevance_score, reason.
+
+            ### Abstract of the submitted paper:
+            \"\"\"{abstract}\"\"\"
+
+            ### Works to Evaluate:
+            {json.dumps(referee["works"], indent=2)}
+        """.strip()
+
+        raw_output = await self.query_llm(prompt)
+        response = self.extract_json_array(raw_output)
+        scored_works = json.loads(response)
+
+        # Filter works below threshold
+        rejected = []
+        for scored in scored_works:
+            score = scored.get("relevance_score", 0.0)
+            if score < threshold:
+                rejected.append({
+                    "id": scored["id"],
+                    "relevance_score": score,
+                    "reason": scored.get("reason", "No reason provided")
+                })
+
+        print("Filtered batch works by relevance done")
+        return {referee["referee_id"]: rejected}
 
 async def main():
 
@@ -734,10 +792,12 @@ async def main():
     sorted_works_by_relevance = await matcher.sort_works_by_relevance(all_top_works, abstract13)
     top_referees = await matcher.get_top_referees(sorted_works_by_relevance, from_year=2016, min_citations=10, max_citations=50)
     
-    extracted_works = matcher.extract_batched_works(top_referees)
+    top_referee_works = matcher.extract_batched_works(top_referees)
+    referees_rej_works = await matcher.reject_irrelevant_works_from_referees(top_referee_works, abstract=abstract13)
+
     # # Save to a file
-    with open("all_top_works.json", "w", encoding="utf-8") as f:
-        json.dump(all_top_works, f, ensure_ascii=False, indent=2)
+    with open("referees_rej_works.json", "w", encoding="utf-8") as f:
+        json.dump(referees_rej_works, f, ensure_ascii=False, indent=2)
 
 # Run main
 asyncio.run(main())
