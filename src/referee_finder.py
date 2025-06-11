@@ -657,18 +657,13 @@ class RefereeMatcher:
                     - 'abstract' (str): The abstract of the work.
 
         Returns:
-            Dict[str, List[Dict]]: A dictionary where:
-                - Each key is a referee's ID (str).
-                - Each value is a list of dictionaries representing the referee's works, each containing:
-                    - 'id' (str): Work ID.
-                    - 'title' (str): Work title (empty string if not available).
-                    - 'abstract' (str): Work abstract (empty string if not available).
+            List[Dict]: A list of dictionaries, each with 'referee_id' and 'works' fields.
         """
         batched_works = []
         for referee in top_referees:
             referee_id = referee['id']
             works = referee.get("works", [])
-            batched_works[referee_id] = [
+            work_list = [
                 {
                     "id": work["id"],
                     "title": work.get("title", ""),
@@ -676,6 +671,10 @@ class RefereeMatcher:
                 }
                 for work in works
             ]
+            batched_works.append({
+                "referee_id": referee_id,
+                "works": work_list
+            })
         return batched_works
 
 async def main():
@@ -732,10 +731,10 @@ async def main():
     
     all_top_works = await matcher.fetch_all_topic_works(topics_data)
 
-    # sorted_works_by_relevance = await matcher.sort_works_by_relevance(all_top_works, abstract13)
-    # top_referees = await matcher.get_top_referees(sorted_works_by_relevance, from_year=2016, min_citations=10, max_citations=50)
+    sorted_works_by_relevance = await matcher.sort_works_by_relevance(all_top_works, abstract13)
+    top_referees = await matcher.get_top_referees(sorted_works_by_relevance, from_year=2016, min_citations=10, max_citations=50)
     
-    # extracted_works = matcher.extract_batched_works(top_referees)
+    extracted_works = matcher.extract_batched_works(top_referees)
     # # Save to a file
     with open("all_top_works.json", "w", encoding="utf-8") as f:
         json.dump(all_top_works, f, ensure_ascii=False, indent=2)
