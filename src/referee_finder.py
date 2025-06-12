@@ -8,6 +8,22 @@ import re
 from typing import List, Dict, Optional
 from pathlib import Path
 from asyncio import Semaphore
+from collections import defaultdict
+from datetime import datetime
+import math
+
+# --- Constants for Continuity Score ---
+ALPHA = 1.0  # Reward coefficient for active runs
+M = 1.2      # Reward exponent for active runs
+BETA = 1.0   # Penalty coefficient for inactive runs
+N_PENALTY = 1.5 # Penalty exponent for inactive runs (renamed to avoid conflict with recency N)
+T_YEARS_ACTIVITY = 10 # Total number of years considered for continuity sequence
+
+
+# --- Constants for Recency Score ---
+N_RECENCY = 4  # The number of years to look back for recency
+K_DECAY = 0.6
+  # The decay constant for the exponential weight
 
 LIARA_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiI2ODQ0NGNjYmMyODAzYzlkYmI0ZTQ3MTIiLCJ0eXBlIjoiYXV0aCIsImlhdCI6MTc0OTMwNzAwMH0.4xuTmA2p0onfvGHo8XlwV4vIjlcE7REMVre0luU-2yU'
 
@@ -801,6 +817,274 @@ class RefereeMatcher:
 
         return updated_referees
 
+    def compute_raw_recency_score(
+        self,
+        pub_history: List[Dict],
+        current_year: int = None,
+        N: int = N_RECENCY, # Using the global constant here
+        k: float = K_DECAY # Using the global constant here
+    ) -> float:
+        """
+        Calculates a recency score for an author's works based on their publication
+        year and average yearly citations per work.
+
+        The formula gives more weight to more recent publications and publications
+        with higher citation impact, using an exponential decay for recency
+        and a logarithmic scale for citations.
+
+        Formula: RS = sum(Weight_i * sum(ln(1 + C_ij) for each work j in year (Y-i)))
+        Where:
+            Weight_i = e^(-k * i)
+            i = years ago from current_year (0 for current, 1 for 1 year ago, etc.)
+            C_ij = average yearly citations for individual work j
+            k = decay constant
+
+        Args:
+            pub_history (list of dict): A list where each dictionary represents an individual
+                                published work. Each dictionary must contain:
+                                - 'pub_year' (int): The publication year of the work.
+                                - 'avg_yearly_citations' (int/float): The average yearly
+                                    citation count for that specific work.
+            current_year (int, optional): The current year to calculate recency from.
+                                        If None, the current system year will be used.
+            N (int, optional): The number of years to look back from the current year.
+                            Defaults to N_RECENCY.
+            k (float, optional): The decay constant for the exponential weight.
+                                A larger 'k' means a faster decay, giving more
+                                emphasis to the very recent past. Defaults to K_DECAY.
+
+        Returns:
+            float: The calculated recency score.
+        """
+        if not pub_history:
+            print("Warning: No publication history provided. Returning a recency score of 0.")
+            return 0.0
+
+        # Determine the current year if not provided
+        if current_year is None:
+            current_year = datetime.now().year
+
+        recency_score = 0.0
+
+        # Group works by their publication year for easier processing
+        works_by_year: Dict[int, List[float]] = {}
+        for pub in pub_history:
+            pub_year = pub.get('pub_year')
+            avg_citations = pub.get('avg_yearly_citations')
+
+            # Basic validation for work data
+            if not isinstance(pub_year, int):
+                print(f"Warning: Skipping work with invalid 'pub_year': {pub}. Must be an integer.")
+                continue
+            if not isinstance(avg_citations, (int, float)) or avg_citations < 0:
+                print(f"Warning: Skipping work with invalid 'avg_yearly_citations': {pub}. Must be a non-negative number.")
+                continue
+
+            if pub_year not in works_by_year:
+                works_by_year[pub_year] = []
+            works_by_year[pub_year].append(float(avg_citations)) # Ensure float for math.log
+
+        # Iterate through the N look-back years, starting from the current year
+        for i in range(N):
+            target_year = current_year - i
+            
+            # Calculate the recency weight for the current year 'i' years ago
+            weight_i = math.exp(-k * i)
+
+            yearly_log_impact_sum = 0.0
+            if target_year in works_by_year:
+                # Sum the logarithmic impact for each individual work in this year
+                for citations in works_by_year[target_year]:
+                    # Add 1 to citations to handle cases where citations might be 0,
+                    # as ln(0) is undefined. ln(1) = 0.
+                    yearly_log_impact_sum += math.log(1 + citations)
+            
+            # Add the weighted sum for the current year to the total recency score
+            recency_score += (weight_i * yearly_log_impact_sum)
+
+        return recency_score
+
+    def compute_raw_activity_score(self, years_active: List[int]) -> float:
+        """
+        Computes the raw activity score for a single referee based on their
+        activity sequence. This function does NOT normalize the score.
+
+        Args:
+            years_active (List[int]): A binary list (0 or 1) representing
+            activity (1) or inactivity (0) over T_YEARS_ACTIVITY.
+
+        Returns:
+            float: The raw activity score.
+        """
+        def extract_runs(binary_sequence: List[int]) -> tuple[List[int], List[int]]:
+            active_runs: List[int] = []
+            inactive_runs: List[int] = []
+
+            if not binary_sequence:
+                return active_runs, inactive_runs
+            if len(binary_sequence) == 1:
+                if binary_sequence[0] == 1:
+                    active_runs.append(1)
+                else:
+                    inactive_runs.append(1)
+                return active_runs, inactive_runs
+
+            current_run_length = 1
+            current_run_type = binary_sequence[0]
+
+            for i in range(1, len(binary_sequence)):
+                if binary_sequence[i] == current_run_type:
+                    current_run_length += 1
+                else:
+                    if current_run_type == 1:
+                        active_runs.append(current_run_length)
+                    else:
+                        inactive_runs.append(current_run_length)
+                    current_run_length = 1
+                    current_run_type = binary_sequence[i]
+
+            if current_run_type == 1:
+                active_runs.append(current_run_length)
+            else:
+                inactive_runs.append(current_run_length)
+
+            return active_runs, inactive_runs
+
+        active_runs, inactive_runs = extract_runs(years_active)
+
+        reward = sum(ALPHA * (r ** M) for r in active_runs)
+        penalty = sum(BETA * (p ** N_PENALTY) for p in inactive_runs)
+
+        raw_score = reward - penalty
+        return raw_score
+
+    def normalize_scores_globally(self, raw_scores_map: Dict[str, float]) -> Dict[str, float]:
+        """
+        Normalizes a dictionary of raw scores for multiple referees to a 0-10 scale
+        based on the global minimum and maximum scores found across all referees.
+
+        Args:
+            raw_scores_map (Dict[str, float]): A dictionary where keys are referee ids
+            and values are their raw scores.
+
+        Returns:
+            Dict[str, float]: A dictionary with referee ids and their globally
+            normalized scores (0-10).
+        """
+        if not raw_scores_map:
+            return {}
+
+        all_raw_scores = list(raw_scores_map.values())
+        global_min_score = min(all_raw_scores)
+        global_max_score = max(all_raw_scores)
+
+        normalized_scores: Dict[str, float] = {}
+
+        if global_max_score == global_min_score:
+            for author_name in raw_scores_map.keys():
+                normalized_scores[author_name] = 5.0 # Neutral score if no variation
+            return normalized_scores
+
+        for author_name, raw_score in raw_scores_map.items():
+            normalized_val = 10 * (raw_score - global_min_score) / (global_max_score - global_min_score)
+            normalized_scores[author_name] = round(max(0.0, min(10.0, normalized_val)), 2)
+            
+        return normalized_scores
+
+    def build_pub_history_from_referees(self, file_path: str) -> list[dict]:
+        """
+        Parses a top_referees_post.json file and creates a list of referees with
+        publication history and associated recency + activity scores.
+
+        Each referee contains:
+        - referee_name
+        - referee_id
+        - institution
+        - is_conflict
+        - pub_history: list of {pub_year, average_yearly_citations}
+        - normalized_recency_score
+        - normalized_activity_score
+        - final_score (sum of the above two)
+
+        Args:
+            file_path (str): Path to the JSON file.
+
+        Returns:
+            list[dict]: A simplified list of referee profiles.
+        """
+        current_year = datetime.now().year
+        with open(file_path, "r", encoding="utf-8") as f:
+            referees = json.load(f)
+
+        simplified_referees = []
+        recency_raw_scores = {}
+        activity_raw_scores = {}
+
+        for referee in referees:
+            referee_id = referee.get("referee_id")
+            referee_name = referee.get("name")
+            institution = referee.get("institution")
+            is_conflict = referee.get("is_conflict", False)
+
+            pub_history = []
+
+            for work in referee.get("works", []):
+                pub_year = work.get("publication_year")
+                cited_by = work.get("citation_count")
+                counts_by_year = work.get("counts_by_year", [])
+
+                if not (isinstance(pub_year, int) and isinstance(cited_by, (int, float))):
+                    continue
+
+                # Use earliest count year if available, otherwise fallback to pub_year
+                years = [y.get("year") for y in counts_by_year if isinstance(y.get("year"), int)]
+                first_year = min(years) if years else pub_year
+
+                years_since_pub = max(current_year - first_year + 1, 1)
+                avg_yearly_citations = round(cited_by / years_since_pub, 2)
+
+                pub_history.append({
+                    "pub_year": pub_year,  # actual publication year for recency score
+                    "avg_yearly_citations": avg_yearly_citations
+                })
+
+            # --- Compute Recency Score ---
+            recency_score = self.compute_raw_recency_score(pub_history, current_year)
+            recency_raw_scores[referee_id] = recency_score
+
+            # --- Compute Activity (Continuity) Score ---
+            years = [entry["pub_year"] for entry in pub_history]
+            year_range = list(range(current_year - T_YEARS_ACTIVITY + 1, current_year + 1))
+            years_active = [1 if y in years else 0 for y in year_range]
+            activity_score = self.compute_raw_activity_score(years_active)
+            activity_raw_scores[referee_id] = activity_score
+
+            simplified_referees.append({
+                "referee_name": referee_name,
+                "referee_id": referee_id,
+                "institution": institution,
+                "is_conflict": is_conflict,
+                "pub_history": pub_history
+            })
+
+        # --- Normalize both scores globally ---
+        normalized_recency = self.normalize_scores_globally(recency_raw_scores)
+        normalized_activity = self.normalize_scores_globally(activity_raw_scores)
+
+        # --- Add scores to referee profiles ---
+        for referee in simplified_referees:
+            rid = referee["referee_id"]
+            rec = normalized_recency.get(rid, 0.0)
+            act = normalized_activity.get(rid, 0.0)
+
+            referee["normalized_recency_score"] = rec
+            referee["normalized_activity_score"] = act
+            referee["final_score"] = round(0.5 * rec + 0.5 * act, 2)
+
+        # Sort referees by final score (highest first)
+        simplified_referees.sort(key=lambda r: r.get("final_score", 0.0), reverse=True)
+        return simplified_referees
+
 async def main():
 
     candidate_author_ids = [
@@ -853,24 +1137,33 @@ async def main():
         # ... possibly more, but we want just the top 3
     ]
     
-    all_top_works = await matcher.fetch_all_topic_works(topics_data)
+    # all_top_works = await matcher.fetch_all_topic_works(topics_data)
 
-    sorted_works_by_relevance = await matcher.sort_works_by_relevance(all_top_works, abstract13)
-    top_referees = await matcher.get_top_referees(sorted_works_by_relevance, from_year=2016, min_citations=10, max_citations=50)
+    # sorted_works_by_relevance = await matcher.sort_works_by_relevance(all_top_works, abstract13)
+    # top_referees = await matcher.get_top_referees(sorted_works_by_relevance, from_year=2016, min_citations=10, max_citations=50)
     
-    top_referee_works = matcher.extract_batched_works(top_referees)
-    rej_works = await matcher.reject_irrelevant_works_from_referees(top_referee_works, abstract=abstract13)
-    updated_referees = matcher.apply_work_rejections(top_referees, rej_works)
+    # top_referee_works = matcher.extract_batched_works(top_referees)
+    # rej_works = await matcher.reject_irrelevant_works_from_referees(top_referee_works, abstract=abstract13)
+    # updated_referees = matcher.apply_work_rejections(top_referees, rej_works)
 
-    # # Save to a file
-    with open("top_referees_pre.json", "w", encoding="utf-8") as f:
-        json.dump(top_referees, f, ensure_ascii=False, indent=2)
+    # # # Save to a file
+    # with open("top_referees_pre.json", "w", encoding="utf-8") as f:
+    #     json.dump(top_referees, f, ensure_ascii=False, indent=2)
 
-    with open("rejected_works.json", "w", encoding="utf-8") as f:
-        json.dump(rej_works, f, ensure_ascii=False, indent=2)
+    # with open("rejected_works.json", "w", encoding="utf-8") as f:
+    #     json.dump(rej_works, f, ensure_ascii=False, indent=2)
 
-    with open("top_referees_post.json", "w", encoding="utf-8") as f:
-        json.dump(updated_referees, f, ensure_ascii=False, indent=2)
+    # with open("top_referees_post.json", "w", encoding="utf-8") as f:
+    #     json.dump(updated_referees, f, ensure_ascii=False, indent=2)
+
+    with open("top_referees_post.json", "r", encoding="utf-8") as f:
+        top_referees = json.load(f)
+
+    pub_profiles = matcher.build_pub_history_from_referees("top_referees_post.json")  
+
+    # Optionally save to JSON
+    with open("pub_referees_profiles.json", "w", encoding="utf-8") as f:
+        json.dump(pub_profiles, f, ensure_ascii=False, indent=2)  
 
 # Run main
 asyncio.run(main())
