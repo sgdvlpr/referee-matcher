@@ -11,6 +11,15 @@ from asyncio import Semaphore
 from collections import defaultdict
 from datetime import datetime
 import math
+from dotenv import load_dotenv
+import os
+from openai import OpenAI
+
+load_dotenv()
+
+LIARA_API_KEY = os.getenv("LIARA_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+MAILTO = os.getenv("MAILTO")
 
 # --- Constants for Continuity Score ---
 ALPHA = 1.0  # Reward coefficient for active runs
@@ -25,13 +34,6 @@ N_RECENCY = 4  # The number of years to look back for recency
 K_DECAY = 0.6
   # The decay constant for the exponential weight
 
-LIARA_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiI2ODQ0NGNjYmMyODAzYzlkYmI0ZTQ3MTIiLCJ0eXBlIjoiYXV0aCIsImlhdCI6MTc0OTMwNzAwMH0.4xuTmA2p0onfvGHo8XlwV4vIjlcE7REMVre0luU-2yU'
-
-from openai import OpenAI
-
-genai.configure(api_key="AIzaSyAj6k2V-Dj39KDMU92nA7q2vYYbsuQ9q2g")
-model = genai.GenerativeModel("gemini-1.5-flash")  # Or "gemini-pro"
-
 OPENALEX_API_BASE = "https://api.openalex.org"
 
 class RefereeMatcher:
@@ -41,12 +43,14 @@ class RefereeMatcher:
         self.fields_metadata = Path(__file__).parent / "data" / "openalex_fields_metadata.json" 
         self.subfields = Path(__file__).parent / "data" / "subfields.json" 
         self.llm_client = OpenAI(
-            base_url="https://ai.liara.ir/api/v1/68444daf64f28c83a27063e1",
+            base_url="https://ai.liara.ir/api/v1/684b283223eb13b4dc530396",
             api_key=LIARA_API_KEY
         )
-        self.mailto = "scramjet14@gmail.com"
-
-    async def query_llm(self, prompt):
+        genai.configure(api_key=GEMINI_API_KEY)
+        self.gem_model = genai.GenerativeModel("gemini-1.5-flash")  # Or "gemini-pro"
+        self.mailto = MAILTO
+    
+    async def query_llm_openai(self, prompt):
         response = self.llm_client.chat.completions.create(
             model="openai/gpt-4o-mini",
             messages=[
@@ -59,6 +63,10 @@ class RefereeMatcher:
 
         return response.choices[0].message.content.strip()
 
+    async def query_llm_gemini(self, prompt: str) -> str:
+        response = self.gem_model.generate_content(prompt)
+        return response.text.strip()
+    
     async def set_conflict_ids(self):
         """
         Sets the global CONFLICT_IDS variable using concurrent coauthor fetching.
@@ -102,7 +110,7 @@ class RefereeMatcher:
             return text[start:end+1]
         return text  # fallback to original if no brackets found
 
-    async def get_best_matching_fields(self, abstract: str) -> Dict:
+    async def get_best_matching_subfields(self, abstract: str) -> Dict:
         """
         Use LLM to find the most relevant subfields from OpenAlex metadata based on the abstract.
         Returns a list of dicts with subfield name, ID, and reason.
@@ -137,7 +145,7 @@ class RefereeMatcher:
         {json.dumps(subfield_names, indent=2)}
         """
 
-        answer = await self.query_llm(prompt)
+        answer = await self.query_llm_openai(prompt)
         clean_answer = self.extract_json_array(answer)
 
         try:
@@ -245,7 +253,7 @@ class RefereeMatcher:
             {subfield_topic_data}
         """
 
-        raw_output = await self.query_llm(prompt)
+        raw_output = await self.query_llm_openai(prompt)
 
         # Try to extract the JSON content from inside code block if present
         json_data = self.extract_json_array(raw_output)
@@ -273,7 +281,13 @@ class RefereeMatcher:
                 })
         return extracted_topics
 
-    async def get_top_works_for_topic(self, topic_id: str, top_n: int = 5, from_year: int = 2016, min_citations: int = 20):
+    # Use keywords to filter out most relevant works
+    async def get_top_works_for_topic(
+            self, topic_id: str, 
+            top_n: int = 20, 
+            from_year: int = 2016, 
+            max_citations: int = 100,
+            min_citations: int = 20):
         """
         Async version: Fetch top works under a given topic ID.
         """
@@ -282,14 +296,15 @@ class RefereeMatcher:
         filters = [
             f"primary_topic.id:{short_id}",
             f"publication_year:>{from_year}",
-            f"cited_by_count:>{min_citations}"
+            f"cited_by_count:>{min_citations}",
+            f"cited_by_count:<{max_citations}"
         ]
 
         params = {
             "filter": ",".join(filters),
             "sort": "cited_by_count:desc",
             "per-page": 100,
-            "mailto": "scramjet14@gmail.com"
+            "mailto": self.mailto
         }
 
         async with httpx.AsyncClient(timeout=30.0) as client:
@@ -311,13 +326,13 @@ class RefereeMatcher:
                     top_referee = {
                         "name": top_authorship["author"]["display_name"],
                         "id": top_authorship["author"].get("id"),
-                        "institution": top_inst[0]["display_name"] if top_inst else None
+                        "institution": top_inst[0].get("display_name") if top_inst and isinstance(top_inst[0], dict) else None
                     }
                     referees = [
                         {
                             "name": co["author"]["display_name"],
                             "id": co["author"].get("id"),
-                            "institution": co.get("institutions", [{}])[0].get("display_name")
+                            "institution": co["institutions"][0]["display_name"] if co.get("institutions") else None
                         }
                         for co in authorships[1:]
                     ]
@@ -335,8 +350,7 @@ class RefereeMatcher:
                     "alt_referees": referees,
                     "citations_count": work.get("cited_by_count"),
                     "year": work.get("publication_year"),
-                    "url": work.get("id"),
-                    "citation_percentile": work.get("cited_by_percentile_year", {}).get("max", 0)  # Normalized metric
+                    "url": work.get("id")
                 })
 
             return top_works
@@ -358,7 +372,7 @@ class RefereeMatcher:
         # Flatten the list of lists into a single list
         flat_works = [work for sublist in all_works_nested for work in sublist]
 
-        print("fetched all topics works")
+        print(f"fetched {len(flat_works)} topic works")
         return flat_works
 
     async def sort_works_by_relevance(self, works: list[dict], abstract: str) -> list[dict]:
@@ -402,7 +416,7 @@ class RefereeMatcher:
         {json.dumps(minimal_works, indent=2)}
         """
 
-        raw_output = await self.query_llm(prompt)
+        raw_output = await self.query_llm_openai(prompt)
         response = self.extract_json_array(raw_output)
         scored_minimal = json.loads(response)
 
@@ -412,7 +426,7 @@ class RefereeMatcher:
             original = id_to_work.get(scored["url"], {})
             enriched.append({**original, "relevance_score": scored.get("relevance_score", 0)})
 
-        print("Sorted works by relevance")
+        print(f"Sorted {len(enriched)} works by relevance")
         return enriched
 
     async def fetch_recent_referee_works(
@@ -420,10 +434,10 @@ class RefereeMatcher:
         referee_id: str,
         from_year: int = None,
         min_citations: int = 0,
-        max_citations: int = 1_000_000
+        max_citations: int = 100
     ) -> list[dict]:
         """
-        Fetch all works authored by `author_id` from `from_year` onward, applying citation filters.
+        Fetch all works authored by `referee_id` from `from_year` onward, applying citation filters.
         Continues paginating until no more qualifying works are found or older than `from_year`.
         """
         url = f"{self.base_url}/works"
@@ -432,8 +446,13 @@ class RefereeMatcher:
 
         async with httpx.AsyncClient(timeout=10.0) as client:
             while True:
+                filters = [
+                    f"author.id:{referee_id}",
+                    f"cited_by_count:>{min_citations}",
+                    f"cited_by_count:<{max_citations}",    
+                ]  
                 params = {
-                    "filter": f"author.id:{referee_id}",
+                    "filter": ",".join(filters),
                     "sort": "publication_year:desc,cited_by_count:desc",
                     "per-page": 50,
                     "cursor": cursor,
@@ -451,9 +470,6 @@ class RefereeMatcher:
                     # Stop condition: year too old
                     if from_year and year and year < from_year:
                         return all_recent_works
-
-                    if citations < min_citations or citations > max_citations:
-                        continue
 
                     abstract_index = w.get("abstract_inverted_index")
                     abstract_text = self.abstract_index_to_text(abstract_index) if abstract_index else ""
@@ -474,6 +490,7 @@ class RefereeMatcher:
                     break
                 cursor = next_cursor
 
+        print (f"Fetched {len(all_recent_works)} works for referee {referee_id}")
         return all_recent_works
 
     async def get_top_referees(
@@ -525,7 +542,7 @@ class RefereeMatcher:
                 tasks.append(fetch_with_limit())
 
         top_referees = await asyncio.gather(*tasks)
-        print("Top referees received")
+        print(f"{len(top_referees)} referees selected in the pool")
         return top_referees
 
     def get_coauthors(self, author_id: str, max_pubs=500) -> tuple[str, dict]:
@@ -544,7 +561,7 @@ class RefereeMatcher:
         params = {
             "filter": ",".join(filters),
             "per-page": 200,
-            "mailto": "scramjet14@gmail.com"
+            "mailto": self.mailto
         }
 
         coauthors = {}
@@ -694,7 +711,8 @@ class RefereeMatcher:
             })
         return batched_works
     
-    async def reject_irrelevant_works_from_referee(self, referee: dict, abstract: str, threshold: float = 6.5) -> dict:
+    # Does not rank all works?
+    async def reject_irrelevant_works_from_referee(self, referee: dict, abstract: str, threshold: float = 8.5) -> dict:
         """
         Uses an AI model to evaluate and score the relevance of a referee's works to a given abstract.
         Filters and returns the works that score below a specified relevance threshold.
@@ -704,7 +722,7 @@ class RefereeMatcher:
                 - referee_id (str): The OpenAlex ID of the referee.
                 - works (list of dict): List of works, each with 'work_id', 'title', and 'abstract' fields.
             abstract (str): The abstract of the submitted paper to compare against.
-            threshold (float, optional): Relevance score threshold. Defaults to 6.5.
+            threshold (float, optional): Relevance score threshold. Defaults to 8.5.
 
         Returns:
             dict: A dictionary with referee_id and a list of rejected_works.
@@ -732,25 +750,29 @@ class RefereeMatcher:
             {json.dumps(referee["works"], indent=2)}
         """.strip()
 
-        raw_output = await self.query_llm(prompt)
+        raw_output = await self.query_llm_openai(prompt)
         response = self.extract_json_array(raw_output)
         scored_works = json.loads(response)
         
-        print(f"scored_works for {referee['referee_id']}")
-        pprint(scored_works, width=100, indent=2)
-        
+        expected_ids = {w['work_id'] for w in referee['works']}
+        scored_ids = {w['work_id'] for w in scored_works}
+
+        missing_ids = expected_ids - scored_ids
+        if missing_ids:
+            print(f"⚠️ Missing scores for {len(missing_ids)} works: {missing_ids}")
+
         # Filter works below threshold
         rejected = []
         for scored in scored_works:
             score = scored.get("relevance_score", 0.0)
-            if score < threshold:
+            if score <= threshold:
                 rejected.append({
                     "work_id": scored["work_id"],
                     "relevance_score": score,
                     "reason": scored.get("reason", "No reason provided")
                 })
-
-        print(f"Filtered works by relevance for referee {referee['referee_id']}")
+    
+        print(f"{len(rejected)} (of {len(referee.get("works"))}) works rejected for referee {referee['referee_id']}")
         return {
             "referee_id": referee["referee_id"],
             "rejected_works": rejected
@@ -991,7 +1013,7 @@ class RefereeMatcher:
             
         return normalized_scores
 
-    def build_pub_history_from_referees(self, file_path: str) -> list[dict]:
+    def build_pub_history_from_referees(self, referees: List[Dict]) -> list[dict]:
         """
         Parses a top_referees_post.json file and creates a list of referees with
         publication history and associated recency + activity scores.
@@ -1012,9 +1034,11 @@ class RefereeMatcher:
         Returns:
             list[dict]: A simplified list of referee profiles.
         """
+
+        # with open(file_path, "r", encoding="utf-8") as f:
+        #     referees = json.load(f)
+
         current_year = datetime.now().year
-        with open(file_path, "r", encoding="utf-8") as f:
-            referees = json.load(f)
 
         simplified_referees = []
         recency_raw_scores = {}
@@ -1121,7 +1145,8 @@ async def main():
     abstract11 = 'This paper explores the impact of framing effects on financial risk-taking among millennials. In a randomized experiment, subjects exposed to gain-framed messages were 24% more likely to invest in high-risk assets, highlighting the significance of behavioral nudges in policy design.'
     abstract12 = 'We report the synthesis of a NiFe-layered double hydroxide nanosheet catalyst for oxygen evolution in alkaline electrolyzers. The catalyst shows an overpotential of only 240 mV at 10 mA/cm² and maintains stability over 100 hours, marking a step toward efficient water splitting.'
     abstract13 = "Quantum many-body systems lie at the heart of modern condensed matter physics, quantum information science, and statistical mechanics. These systems consist of large ensembles of interacting particles whose collective quantum behavior gives rise to rich and often non-intuitive phenomena, such as quantum phase transitions, entanglement, and topological order. Understanding and simulating such systems remains a grand challenge due to the exponential complexity of their Hilbert space. Recent advances, including tensor network methods, quantum Monte Carlo, and machine learning-inspired approaches, have enabled significant progress in capturing the low-energy physics of various models. Moreover, experimental breakthroughs using ultracold atoms, superconducting qubits, and Rydberg atom arrays now allow precise control and observation of many-body dynamics in regimes once thought inaccessible. These developments are paving the way toward unraveling fundamental aspects of quantum matter and advancing technologies such as quantum simulation and computation."
-
+    abstract14 = "Advanced photonic communication systems and optical network technologies enable ultra-fast, energy-efficient data transmission by harnessing the power of light. Photonic components such as lasers, modulators, and detectors support high-speed signal processing, while modern optical networks—including SDN-enabled and space-division multiplexed systems—ensure scalable, flexible connectivity. Together, these innovations form the backbone of next-generation infrastructure for data centers, cloud computing, and 5G/6G networks."
+    abstract15 = "This paper explores recent innovations in advanced wireless communication techniques with a focus on the enabling role of cutting-edge Phase-Locked Loop (PLL) and Voltage-Controlled Oscillator (VCO) technologies. We examine how improvements in PLL and VCO design contribute to enhanced frequency synthesis, phase noise reduction, and overall signal integrity, which are critical for next-generation high-speed and low-power wireless systems. The synergy between these circuit-level advancements and modern communication architectures is analyzed, highlighting their impact on spectral efficiency, reliability, and scalability in emerging wireless applications."
     # field = await matcher.get_best_matching_fields(abstract6)
     # subfields_topics = await matcher.get_topics_for_selected_subfields(field)
     # filters = await matcher.filter_relevant_topics_for_subfields(abstract6, subfields_topics)
@@ -1131,35 +1156,31 @@ async def main():
     topic_id = "https://openalex.org/T10321"
 
     topics_data = [
-        {"topic_id": "https://openalex.org/T10622", "topic_name": "Quantum Mechanics and Applications"},
-        {"topic_id": "https://openalex.org/T11804", "topic_name": "Quantum many-body systems"},
-        {"topic_id": "https://openalex.org/T10275", "topic_name": "2D Materials and Applications"},
+        {"topic_id": "https://openalex.org/T10125", "topic_name": "Advanced Wireless Communication Technique"},
+        {"topic_id": "https://openalex.org/T11417", "topic_name": "Advancements in PLL and VCO Technologies"},
         # ... possibly more, but we want just the top 3
     ]
+
+    all_top_works = await matcher.fetch_all_topic_works(topics_data)
+
+    sorted_works_by_relevance = await matcher.sort_works_by_relevance(all_top_works, abstract15)
+    top_referees = await matcher.get_top_referees(sorted_works_by_relevance, from_year=2016, min_citations=15, max_citations=80)
     
-    # all_top_works = await matcher.fetch_all_topic_works(topics_data)
+    top_referee_works = matcher.extract_batched_works(top_referees)
+    rej_works = await matcher.reject_irrelevant_works_from_referees(top_referee_works, abstract=abstract15)
+    updated_referees = matcher.apply_work_rejections(top_referees, rej_works)
 
-    # sorted_works_by_relevance = await matcher.sort_works_by_relevance(all_top_works, abstract13)
-    # top_referees = await matcher.get_top_referees(sorted_works_by_relevance, from_year=2016, min_citations=10, max_citations=50)
-    
-    # top_referee_works = matcher.extract_batched_works(top_referees)
-    # rej_works = await matcher.reject_irrelevant_works_from_referees(top_referee_works, abstract=abstract13)
-    # updated_referees = matcher.apply_work_rejections(top_referees, rej_works)
+    # # Save to a file
+    with open("top_referees_pre.json", "w", encoding="utf-8") as f:
+        json.dump(top_referees, f, ensure_ascii=False, indent=2)
 
-    # # # Save to a file
-    # with open("top_referees_pre.json", "w", encoding="utf-8") as f:
-    #     json.dump(top_referees, f, ensure_ascii=False, indent=2)
+    with open("rejected_works.json", "w", encoding="utf-8") as f:
+        json.dump(rej_works, f, ensure_ascii=False, indent=2)
 
-    # with open("rejected_works.json", "w", encoding="utf-8") as f:
-    #     json.dump(rej_works, f, ensure_ascii=False, indent=2)
+    with open("top_referees_post.json", "w", encoding="utf-8") as f:
+        json.dump(updated_referees, f, ensure_ascii=False, indent=2)
 
-    # with open("top_referees_post.json", "w", encoding="utf-8") as f:
-    #     json.dump(updated_referees, f, ensure_ascii=False, indent=2)
-
-    with open("top_referees_post.json", "r", encoding="utf-8") as f:
-        top_referees = json.load(f)
-
-    pub_profiles = matcher.build_pub_history_from_referees("top_referees_post.json")  
+    pub_profiles = matcher.build_pub_history_from_referees(updated_referees)  
 
     # Optionally save to JSON
     with open("pub_referees_profiles.json", "w", encoding="utf-8") as f:
