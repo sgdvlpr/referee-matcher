@@ -95,12 +95,12 @@ referee-matcher/
 
 ## ⚙️ Core Components
 
-| Function / Class        | Description |
-|-------------------------|-------------|
-| `query_llm_openai(prompt)`     | Queries OpenAI (GPT-4o mini) for topic/keyword extraction |
-| `query_llm_gemini(prompt)` | Uses Gemini (1.5 Flash/Pro) as an alternative |
-| `get_candidate_authors()` | Pulls authors from OpenAlex with matching expertise |
-| `score_authors()`       | Ranks them based on recency, continuity, and topic focus |
+| Function / Class                    | Description |
+|-------------------------------------|-------------|
+| `query_llm_openai(prompt)`          | Queries OpenAI (GPT-4o mini) for topic/keyword extraction |
+| `query_llm_gemini(prompt)`          | Uses Gemini (1.5 Flash/Pro) as an alternative |
+| `get_top_referees()`                | Pulls unique top referees from a list of works |
+| `build_pub_history_from_referees`   | creates a list of referees with publication history and associated recency + activity scores. |
 
 ---
 
