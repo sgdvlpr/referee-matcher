@@ -59,13 +59,7 @@ MAILTO=your_email@example.com
 This is currently a script-style project. Run the matching system with:
 
 ```bash
-python app.py
-```
-
-If using it as a module:
-
-```bash
-python -m referee_matcher
+python test_app.py
 ```
 
 A FastAPI-based backend will be added soon for interactive querying.
