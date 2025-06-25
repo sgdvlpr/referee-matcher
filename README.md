@@ -145,14 +145,15 @@ Please do **not** commit `.env` or any sensitive data.
 
 ## 🛡 License
 
-This project is licensed under the **MIT License**.  
-See the [LICENSE](./LICENSE) file for details.
+This project currently has **no open-source license**.  
+All rights reserved © 2025 Saeed.  
+Please contact the author for permission to use or contribute.
 
 ---
 
 ## 👤 Maintainer
 
-**Saeed**  
+**Saeed Gholami**  
 Developer & Researcher  
 📧 scramjet14@gmail.com
 
